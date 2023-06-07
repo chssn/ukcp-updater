@@ -73,12 +73,6 @@ class CurrentInstallation:
     def user_settings(self) -> dict:
         """Parse current *.prf files for custom settings"""
 
-        realname = set()
-        certificate = set()
-        password = set()
-        facility = set()
-        rating = set()
-        plugins = set()
         return_user_data = {}
 
         def menu_option(title:str, data_type:str, options:list) -> str:
@@ -114,14 +108,37 @@ class CurrentInstallation:
         else:
             logger.success("User consent given for file search")
 
-            # Set some regex patterns
-            regex_realname = re.compile(r"LastSession\trealname\t(.*)")
-            regex_certificate = re.compile(r"LastSession\tcertificate\t([0-9]{4,})")
-            regex_password = re.compile(r"LastSession\tpassword\t(.*)")
-            regex_facility = re.compile(r"LastSession\tfacility\t([0-9]{1})")
-            regex_rating = re.compile(r"LastSession\trating\t([0-9]{1})")
-            # UKCP currently installs 2 plugins, so the first user custom plugin will be 3
-            regex_plugins = re.compile(r"Plugins\t(Plugin[0-9]{1}\t[A-Z]{1}\:\\.*)")
+            # List all the regex patterns
+            patterns = {
+                "realname": r"LastSession\trealname\t(.*)",
+                "certificate": r"LastSession\tcertificate\t([0-9]{4,})",
+                "password": r"LastSession\tpassword\t(.*)",
+                "facility": r"LastSession\tfacility\t([0-9]{1})",
+                "rating": r"LastSession\trating\t([0-9]{1})",
+                "plugins": r"Plugins\t(Plugin[0-9]{1}\t[A-Z]{1}\:\\.*)",
+                "vccs_ptt_g2a": r"TeamSpeakVccs\tTs3G2APtt\t([0-9]{1,10})",
+                "vccs_ptt_g2g": r"TeamSpeakVccs\tTs3G2GPtt\t([0-9]{1,10})",
+                "vccs_playback_mode": r"TeamSpeakVccs\tPlaybackMode\t(.*)",
+                "vccs_playback_device": r"TeamSpeakVccs\tPlaybackDevice\t(.*)",
+                "vccs_capture_mode": r"TeamSpeakVccs\tCaptureMode\t(.*)",
+                "vccs_capture_device": r"TeamSpeakVccs\tCaptureDevice\t(.*)",
+            }
+
+            # Init the return_user_data keys
+            return_user_data.update({
+                "realname": set(),
+                "certificate": set(),
+                "password": set(),
+                "facility": set(),
+                "rating": set(),
+                "plugins": set(),
+                "vccs_ptt_g2a": set(),
+                "vccs_ptt_g2g": set(),
+                "vccs_capture_mode": set(),
+                "vccs_capture_device": set(),
+                "vccs_playback_mode": set(),
+                "vccs_playback_device": set(),
+            })
 
             # Iterate over files in the directory and search within each file
             for root, dirs, files in os.walk(self.ukcp_location):
@@ -131,68 +148,45 @@ class CurrentInstallation:
                         logger.debug(f"Found {file_path}")
                         with open(file_path, 'r') as file:
                             for line in file:
-                                # Look for strings
-                                match_a = regex_realname.match(line)
-                                match_b = regex_certificate.match(line)
-                                match_c = regex_password.match(line)
-                                match_d = regex_facility.match(line)
-                                match_e = regex_rating.match(line)
-                                match_f = regex_plugins.match(line)
-
-                                if match_a:
-                                    realname.add(match_a.group(1))
-                                elif match_b:
-                                    certificate.add(match_b.group(1))
-                                elif match_c:
-                                    password.add(match_c.group(1))
-                                elif match_d:
-                                    facility.add(match_d.group(1))
-                                elif match_e:
-                                    rating.add(match_e.group(1))
-                                elif match_f:
-                                    plugins.add(match_f.group(1))
+                                for key, pattern in patterns.items():
+                                    match = re.match(pattern, line)
+                                    if match:
+                                        return_user_data[key].add(match.group(1))
                                          
-            if len(realname) > 1:
-                logger.warning("More than one setting for your real name has been found!")
-                menu_select = menu_option("Select the real name you wish to use below", "real name", list(realname))
-                return_user_data["realname"] = menu_select
-            else:
-                return_user_data["realname"] = list(realname)[0]
-            
-            if len(certificate) > 1:
-                logger.warning("More than one setting for your certificate (CID) has been found!")
-                menu_select = menu_option("Select the certificate (CID) you wish to use below", "certificate", list(certificate))
-                return_user_data["certificate"] = menu_select
-            else:
-                return_user_data["certificate"] = list(certificate)[0]
-            
-            if len(password) > 1:
-                logger.warning("More than one setting for your password has been found!")
-                logger.info(f"We found {len(password)} different passwords however won't display them!")
-                logger.info("Please enter your password below. Note that no characters or *'s will be displayed!")
-                return_user_data["password"] = getpass()
-            else:
-                return_user_data["password"] = list(password)[0]
-            
-            if len(rating) > 1:
-                logger.warning("More than one setting for your rating has been found!")
-                # menu select here
-            else:
-                return_user_data["rating"] = list(rating)[0]
-            
-            if len(plugins) > 0:
-                logger.info("The following custom (non UKCP) plugins have been detected:")
-                plugin_out = []
-                for i in list(plugins):
-                    p_out = str(i).split("\\")[-1]
-                    logger.info(p_out)
-                    plugin_out.append(str(i))
-                response = input("Do you want to add these plugins to every profile? [Y|n] ")
-                if str(response).upper() == "N":
-                    plugin_out = ["Not selected"]
-            else:
-                logger.info("No custom (non UKCP) plugins were detected")
-                plugin_out = ["No custom (non UKCP) plugins were detected"]
+            # Process the collected data
+            for key, values in return_user_data.items():
+                if key != "password" and key != "plugins":
+                    if len(values) > 1:
+                        logger.warning(f"More than one setting for {key} has been found!")
+                        menu_select = menu_option(f"Select the {key} you wish to use below", key, list(values))
+                        return_user_data[key] = menu_select
+                    else:
+                        return_user_data[key] = next(iter(values), None)
+                elif key == "password":
+                    # Passwords handled separately
+                    if len(values) > 1:
+                        logger.warning("More than one setting for your password has been found!")
+                        logger.info(f"We found {len(values)} different passwords however won't display them!")
+                        logger.info("Please enter your password below. Note that no characters or *'s will be displayed!")
+                        return_user_data["password"] = getpass()
+                    else:
+                        return_user_data["password"] = list(values)[0]
+                elif key == "plugins":
+                    # Handle plugins separately
+                    plugins = return_user_data["plugins"]
+                    if plugins:
+                        logger.info("The following custom (non UKCP) plugins have been detected:")
+                        plugin_out = []
+                        for i in list(plugins):
+                            p_out = str(i).split("\\")[-1]
+                            logger.info(p_out)
+                            plugin_out.append(str(i))
+                        response = input("Do you want to add these plugins to every profile? [Y|n] ")
+                        if response.upper() == "N":
+                            plugin_out = ["Not selected"]
+                    else:
+                        logger.info("No custom (non UKCP) plugins were detected")
+                        plugin_out = ["No custom (non UKCP) plugins were detected"]
             
         print("The following data will be appended to all profiles in the UK Controller Pack")
         print("This is a LOCAL operation and none of your data is transmitted away from your computer!")
@@ -205,6 +199,9 @@ class CurrentInstallation:
                 print(f"Plugins:\t{i}")
             else:
                 print(f"\t\t{i}")
+        print(f"VCCS Nickname:\t{return_user_data['certificate']}\t\tNote: This has just been copied from your certificate")
+        print(f"VCCS G2A PTT:\t{return_user_data['vccs_ptt_g2a']}")
+        print(f"VCCS G2G PTT:\t{return_user_data['vccs_ptt_g2g']}")
         
         return return_user_data
 
