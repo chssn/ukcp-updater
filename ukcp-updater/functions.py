@@ -98,7 +98,7 @@ class CurrentInstallation:
                     logger.error(f"Invalid input detected, you entered {choice}. Please enter the number corresponding to the option you wish to use")
 
         # Ask the user if they consent to file search for custom settings
-        consent = input("Do you want us to search your existing files for any custom settings? [Y|n]")
+        consent = input("Do you want us to search your existing files for any custom settings? [Y|n] ")
         if consent.upper() == "N":
             logger.warning("User consent not given for file search")
             return_user_data["realname"] = input("Enter your real name or CID: ")
@@ -190,24 +190,24 @@ class CurrentInstallation:
             
         print("The following data will be appended to all profiles in the UK Controller Pack")
         print("This is a LOCAL operation and none of your data is transmitted away from your computer!")
-        print(f"Real Name:\t{return_user_data['realname']}")
-        print(f"Certificate:\t{return_user_data['certificate']}")
-        print(f"Password:\t[NOT DISPLAYED]")
-        print(f"Rating:\t\t{return_user_data['rating']}")
+        print(f"Real Name:\t\t{return_user_data['realname']}")
+        print(f"Certificate:\t\t{return_user_data['certificate']}")
+        print(f"Password:\t\t[NOT DISPLAYED]")
+        print(f"Rating:\t\t\t{return_user_data['rating']}")
         for j, i in enumerate(plugin_out):
             if j == 0:
-                print(f"Plugins:\t{i}")
+                print(f"Plugins:\t\t{i}")
             else:
-                print(f"\t\t{i}")
-        print(f"VCCS Nickname:\t{return_user_data['certificate']}\t\tNote: This has just been copied from your certificate")
-        print(f"VCCS G2A PTT:\t{return_user_data['vccs_ptt_g2a']}")
-        print(f"VCCS G2G PTT:\t{return_user_data['vccs_ptt_g2g']}")
+                print(f"\t\t\t{i}")
+        print(f"VCCS Nickname:\t\t{return_user_data['certificate']}\t\tNote: This has just been copied from your certificate")
+        print(f"VCCS G2A PTT:\t\t{return_user_data['vccs_ptt_g2a']}")
+        print(f"VCCS G2G PTT:\t\t{return_user_data['vccs_ptt_g2g']}")
+        print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_mode']}")
+        print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_mode']}")
+        print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_device']}")
+        print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_device']}")
         
         return return_user_data
-
-
-tst = CurrentInstallation()
-tst.user_settings()
                                 
 
 class Euroscope:
