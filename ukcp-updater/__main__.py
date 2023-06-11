@@ -1,35 +1,28 @@
-import curses
+#!/usr/bin/env python3
 
-# Create a window
-stdscr = curses.initscr()
+# Standard Libraries
 
-# Turn off echoing of keys and enable special keys
-curses.noecho()
-stdscr.keypad(True)
+# Third Party Libraries
+from loguru import logger
 
-# Clear the screen
-stdscr.clear()
+# Local Libraries
+from . import functions
 
-# Print a menu
-stdscr.addstr(0, 0, "1. Option 1")
-stdscr.addstr(1, 0, "2. Option 2")
-stdscr.addstr(2, 0, "3. Option 3")
-stdscr.refresh()
+@logger.catch
+def main():
+    # Check that git is installed
+    git = functions.Downloader()
+    if git.check_requirements():
+        # Check that the repo exists, if not then clone it
+        git.clone()
 
-# Get user input
-while True:
-    key = stdscr.getch()
-    if key == ord('1'):
-        # Handle option 1
-        break
-    elif key == ord('2'):
-        # Handle option 2
-        break
-    elif key == ord('3'):
-        # Handle option 3
-        break
+        # Check current settings
+        update = functions.CurrentInstallation()
+        user_settings = update.user_settings()
+        changed_files = update.hash_compute()
 
-# Clean up
-curses.keypad(False)
-curses.echo()
-curses.endwin()
+        # Stash any changes and run 'git pull'
+        git.pull()
+
+if __name__ == "__main__":
+    main()
