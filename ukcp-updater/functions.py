@@ -2,15 +2,18 @@
 
 # Standard Libraries
 import ctypes
+import hashlib
 import os
 import re
+import subprocess
 from distutils.version import LooseVersion
 from getpass import getpass
 from tkinter import Tk
 from tkinter import filedialog
 
 # Third Party Libraries
-from git import Repo
+import git
+import pandas as pd
 from loguru import logger
 
 # Local Libraries
@@ -20,7 +23,7 @@ class Downloader:
     Downloads the latest version of UKCP
     """
 
-    def __init__(self, main_branch:bool=False) -> None:
+    def __init__(self, main_branch:bool=False, git_folder:str="uk-controller-pack", branch:str="main") -> None:
         # Currently hardcoded for VATSIM UK
         self.repo_url = "https://github.com/VATSIM-UK/uk-controller-pack.git"
 
@@ -35,10 +38,158 @@ class Downloader:
         # Default is the EuroScope folder in APPDATA
         appdata_folder = os.environ["APPDATA"]
         self.euroscope_appdata = os.path.join(appdata_folder, 'EuroScope')
+        logger.debug(f"Euroscope AppData Folder: {self.euroscope_appdata}")
+
+        # Set some git vars
+        self.git_folder = git_folder
+        self.git_path = f"{self.euroscope_appdata}\\{git_folder}"
+        self.branch = branch
+
+    def get_remote_tags(self) -> list:
+        """Gets a list of remote tags"""
+
+        if os.path.exists(self.git_path):
+            repo = git.Repo(self.git_path)
+            tags = [tag.name for tag in repo.tags]
+            logger.debug(tags)
+            return tags
+        return []
+
+    def check_requirements(self) -> bool:
+        """Checks to see if the basic requirements are satisfied"""
+
+        def is_git_installed() -> bool:
+            try:
+                # Execute the git command to check if it is recognized
+                version = subprocess.check_output(['git', '--version'])
+                logger.success(f"Git is installed - {str(version.decode()).strip()}")
+                return True
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                return False
+        
+        def install_git() -> bool:
+            """Trys to install the git package"""
+            logger.info("Lauching PowerShell to run the following command: winget install --id Git.Git -e --source winget")
+            logger.info("You can find out more about winget here - https://learn.microsoft.com/en-us/windows/package-manager/winget/")
+
+            # Launch the shell
+            process = subprocess.Popen(["powershell.exe", "-Command", "winget install --id Git.Git -e --source winget"])
+
+            # Wait for the process to complete and get the exit status
+            process.communicate()
+            exit_status = process.returncode
+
+            # Continue with the remaining code or perform actions based on the exit status
+            if exit_status == 0:
+                logger.success("PowerShell command executed successfully.")
+                return True
+            else:
+                logger.error("PowerShell command failed with exit status:", exit_status)
+                return False
+
+        # Test if Git is installed
+        if not is_git_installed():
+            logger.error("Git is not installed")
+            print("For this tool to work properly, the 'git' package is required.")
+            print("This tool can automatically download the 'git' package from:")
+            print("\thttps://git-scm.com/download/win")
+            consent = input("Are you happy for this tool to install 'git'? [Y|n] ")
+            if consent:
+                if install_git():
+                    logger.success("Git has been installed")
+                    return True
+            return False
+        else:
+            return True
     
-    def git_clone(self):
-        """Perform the clone operation"""
-        Repo.clone(self.repo_url, self.euroscope_appdata, branch=self.tag)
+    def clone(self) -> bool:
+        """Perform the clone operation. Returns TRUE if the folder already exists and FALSE if not"""
+        folder = f"{self.euroscope_appdata}\\{self.git_folder}"
+        if os.path.exists(folder):
+            logger.success(f"The repo has already been cloned to {folder}")
+            return True
+        else:
+            logger.info(f"Cloning into {self.repo_url}")
+            git.Repo.clone_from(self.repo_url, folder, branch=self.branch)
+            logger.success("The repo has been successfully cloned")
+        repo = git.Repo(folder)
+        repo.git.checkout(self.tag)
+        
+        return False
+
+    def pull(self) -> bool:
+        """Performs a 'git pull' operation"""
+        folder = f"{self.euroscope_appdata}\\{self.git_folder}"
+        if os.path.exists(folder):
+            logger.info(f"Pulling changes from {self.repo_url} to {folder}")
+            
+            # Open the repository
+            repo = git.Repo(folder)
+            # Switch to the main branch (ie not a tag or commit)
+            switch = True
+            while switch:
+                try:
+                    repo.git.checkout(self.branch)
+                    switch = False
+                except git.exc.GitCommandError as err:
+                    logger.warning(f"'git checkout {self.branch}' failed due to local changes not being saved...")
+                    commit = repo.head.commit
+
+                    # Get the changed files
+                    changed_files = [item.a_path for item in commit.diff(None)]
+                    if changed_files:
+                        logger.info("Changed files:")
+                        for file in changed_files:
+                            if ".prf" not in file:
+                                logger.info(file)
+                                file_diff = repo.git.diff("2023/05", file)
+                                for d in str(file_diff).split("\n"):
+                                    chk = re.match(r"^\+(.*)", d)
+                                    if chk:
+                                        print(chk.group(1))
+                                #print(file_diff)
+                        break
+                        logger.info("Stashing changes in local repository...")
+                        repo.git.stash()
+                        logger.success(repo.git.rev_parse("stash@{0}"))
+                    else:
+                        logger.info("No changed files.")
+
+            logger.debug(repo)
+            logger.info(f"Requested branch was {self.branch}")
+            logger.info(f"Active branch is {repo.active_branch}")
+
+            if str(repo.active_branch) == str(self.branch):
+                # Pull the latest commit
+                logger.debug(f"Pull {self.repo_url}")
+                repo.git.pull()
+
+                # Checkout the latest tag
+                tags = self.get_remote_tags()
+                logger.info(f"Checking out {tags[-1]}")
+                repo.git.checkout(tags[-1])
+
+                # Verify that we have the latest tag
+                if repo.head.is_detached:
+                    commit = repo.head.commit
+
+                    # Find the tags associated with the commit
+                    tag = None
+                    for t in repo.tags:
+                        if t.commit == commit:
+                            tag = t.name
+                            break
+
+                    if tag:
+                        logger.info(f"Detached HEAD is associated with the following tag: {tag}")
+                    else:
+                        logger.warning("Detached HEAD is not associated with any tags.")
+                else:
+                    logger.info("HEAD is not detached.")
+
+                return True
+        logger.error(f"Folder {folder} was not found!")
+        return False
 
 
 class CurrentInstallation:
