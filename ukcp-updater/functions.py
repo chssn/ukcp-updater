@@ -55,7 +55,7 @@ class CurrentInstallation:
 
         # This is the default install location for EuroScope
         appdata_folder = os.environ["APPDATA"]
-        default_path = os.path.join(appdata_folder, 'EuroScope', 'UK')
+        default_path = os.path.join(appdata_folder, 'EuroScope', 'uk-controller-pack', 'UK')
         logger.info(f"Testing to see if {default_path} is valid...")
 
         if os.path.exists(default_path):
