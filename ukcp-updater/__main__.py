@@ -19,7 +19,6 @@ def main():
         # Check current settings
         update = functions.CurrentInstallation()
         user_settings = update.user_settings()
-        changed_files = update.hash_compute()
 
         # Stash any changes and run 'git pull'
         git.pull()
