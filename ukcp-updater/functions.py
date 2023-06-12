@@ -125,7 +125,7 @@ class Downloader:
             
             # Open the repository
             repo = git.Repo(folder)
-            # Switch to the main branch (ie not a tag or commit)
+            # Try and switch to the main branch (ie not a tag or commit)
             switch = True
             while switch:
                 try:
@@ -138,15 +138,19 @@ class Downloader:
                     # Get the changed files
                     changed_files = [item.a_path for item in commit.diff(None)]
                     if changed_files:
-                        logger.info("Changed files:")
+                        # Get the latest tag (local)
+                        tags = self.get_remote_tags()
+                        logger.info(f"Diff local changes against tag {tags[-1]}")
                         for file in changed_files:
-                            if ".prf" not in file:
+                            # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
+                            if str(file).split(".")[-1] not in ["prf", "sct", "rwy", "ese"]:
                                 logger.info(file)
-                                file_diff = repo.git.diff("2023/05", file)
+                                file_diff = repo.git.diff(tags[-1], file)
                                 for d in str(file_diff).split("\n"):
-                                    chk = re.match(r"^\+(.*)", d)
+                                    # Only look for additions not deletions
+                                    chk = re.match(r"^\+([A-Za-z]+.*)", d)
                                     if chk:
-                                        print(chk.group(1))
+                                        logger.debug(chk.group(1))
                                 #print(file_diff)
                         break
                         logger.info("Stashing changes in local repository...")
