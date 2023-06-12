@@ -1,5 +1,15 @@
 <!--next-version-placeholder-->
 
+## v0.1.1 (2023-06-12)
+
+### Fix
+
+* Add in git functions to main ([`0d52aad`](https://github.com/chssn/ukcp-updater/commit/0d52aad5ba415a3e7ee4ef8cb1f92b63224f0372))
+
+### Performance
+
+* Removed hash function in favour of git ([`b2c86b0`](https://github.com/chssn/ukcp-updater/commit/b2c86b015fb1cf9296e4fa1723e1334b106809aa))
+
 ## v0.1.0 (2023-06-11)
 
 ### Feature
