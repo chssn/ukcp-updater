@@ -228,7 +228,38 @@ class CurrentInstallation:
     def user_settings(self) -> dict:
         """Parse current *.prf files for custom settings"""
 
+        plugin_out = []
         return_user_data = {}
+        # Init the return_user_data keys
+        return_user_data.update({
+            "realname": None,
+            "certificate": None,
+            "password": None,
+            "facility": None,
+            "rating": None,
+            "plugins": None,
+            "vccs_ptt_g2a": None,
+            "vccs_ptt_g2g": None,
+            "vccs_capture_mode": None,
+            "vccs_capture_device": None,
+            "vccs_playback_mode": None,
+            "vccs_playback_device": None,
+        })
+
+        def manual_entry(realname:bool=False, certificate:bool=False, password:bool=False, rating:bool=False, all_data:bool=True) -> None:
+            """Allow manual entry of user data"""
+
+            if realname or all_data:
+                return_user_data["realname"] = input("Enter your real name or CID: ")
+            
+            if certificate or all_data:
+                return_user_data["certificate"] = input("Enter your certificate or CID: ")
+            
+            if password or all_data:
+                return_user_data["password"] = getpass(prompt="Enter your password: ")
+            
+            if rating or all_data:
+                return_user_data["rating"] = input("Enter your rating: ")
 
         def menu_option(title:str, data_type:str, options:list) -> str:
             """Menu to select one option out of many!"""
@@ -256,10 +287,7 @@ class CurrentInstallation:
         consent = input("Do you want us to search your existing files for any custom settings? [Y|n] ")
         if consent.upper() == "N":
             logger.warning("User consent not given for file search")
-            return_user_data["realname"] = input("Enter your real name or CID: ")
-            return_user_data["certificate"] = input("Enter your certificate or CID: ")
-            return_user_data["password"] = getpass(prompt="Enter your password: ")
-            return_user_data["rating"] = input("Enter your rating: ")
+            manual_entry(all_data=True)
         else:
             logger.success("User consent given for file search")
 
@@ -324,7 +352,7 @@ class CurrentInstallation:
                         logger.info(f"We found {len(values)} different passwords however won't display them!")
                         logger.info("Please enter your password below. Note that no characters or *'s will be displayed!")
                         return_user_data["password"] = getpass()
-                    else:
+                    elif len(values) == 1:
                         return_user_data["password"] = list(values)[0]
                 elif key == "plugins":
                     # Handle plugins separately
@@ -342,7 +370,19 @@ class CurrentInstallation:
                     else:
                         logger.info("No custom (non UKCP) plugins were detected")
                         plugin_out = ["No custom (non UKCP) plugins were detected"]
-            
+
+        # Check for "None" entries
+        logger.debug(return_user_data)
+        if return_user_data["realname"] is None:
+            manual_entry(realname=True)
+        if return_user_data["certificate"] is None:
+            manual_entry(certificate=True)
+        if return_user_data["password"] is None:
+            manual_entry(password=True)
+        if return_user_data["rating"] is None:
+            manual_entry(rating=True)
+
+        # User information
         print("The following data will be appended to all profiles in the UK Controller Pack")
         print("This is a LOCAL operation and none of your data is transmitted away from your computer!")
         print(f"Real Name:\t\t{return_user_data['realname']}")
