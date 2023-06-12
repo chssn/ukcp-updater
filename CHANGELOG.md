@@ -1,5 +1,16 @@
 <!--next-version-placeholder-->
 
+## v0.2.0 (2023-06-12)
+
+### Feature
+
+* Apply settings to prf and asr files ([`0dce116`](https://github.com/chssn/ukcp-updater/commit/0dce11670bf7d58aed1a3c023ac75aa1f943da09))
+* Allow manual data entry ([`646b25f`](https://github.com/chssn/ukcp-updater/commit/646b25f08cfa0812d2c4711fbb52db6b1a7e48f4))
+
+### Fix
+
+* Corrected use of tags ([`8c06ecd`](https://github.com/chssn/ukcp-updater/commit/8c06ecd7ec318f9d1a1c53342b59c9fddff5c0f5))
+
 ## v0.1.1 (2023-06-12)
 
 ### Fix
