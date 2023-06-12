@@ -62,7 +62,7 @@ class Downloader:
             try:
                 # Execute the git command to check if it is recognized
                 version = subprocess.check_output(['git', '--version'])
-                logger.success(f"Git is installed - {str(version.decode()).strip()}")
+                logger.debug(f"Git is installed - {str(version.decode()).strip()}")
                 return True
             except (FileNotFoundError, subprocess.CalledProcessError):
                 return False
@@ -207,10 +207,10 @@ class CurrentInstallation:
         # This is the default install location for EuroScope
         appdata_folder = os.environ["APPDATA"]
         default_path = os.path.join(appdata_folder, 'EuroScope', 'uk-controller-pack', 'UK')
-        logger.info(f"Testing to see if {default_path} is valid...")
+        logger.debug(f"Testing to see if {default_path} is valid...")
 
         if os.path.exists(default_path):
-            logger.success(f"UK Controller Pack data is installed in the default location {default_path}")
+            logger.debug(f"UK Controller Pack data is installed in the default location {default_path}")
             return default_path
         else:
             # This first bit just hides the tkinter box so only file explorer is displayed
