@@ -150,7 +150,7 @@ class Downloader:
                                     # Only look for additions not deletions
                                     chk = re.match(r"^\+([A-Za-z]+.*)", d)
                                     if chk:
-                                        logger.debug(chk.group(1))
+                                        logger.trace(chk.group(1))
                         logger.info("Stashing changes in local repository...")
                         repo.git.stash()
                         logger.success(repo.git.rev_parse("stash@{0}"))
@@ -296,7 +296,7 @@ class CurrentInstallation:
                 "password": r"LastSession\tpassword\t(.*)",
                 "facility": r"LastSession\tfacility\t([0-9]{1})",
                 "rating": r"LastSession\trating\t([0-9]{1})",
-                "plugins": r"Plugins\t(Plugin[0-9]{1}\t[A-Z]{1}\:\\.*)",
+                "plugins": r"Plugins\tPlugin[0-9]{1}\t([A-Z]{1}\:\\.*)",
                 "vccs_ptt_g2a": r"TeamSpeakVccs\tTs3G2APtt\t([0-9]{1,10})",
                 "vccs_ptt_g2g": r"TeamSpeakVccs\tTs3G2GPtt\t([0-9]{1,10})",
                 "vccs_playback_mode": r"TeamSpeakVccs\tPlaybackMode\t(.*)",
@@ -370,7 +370,6 @@ class CurrentInstallation:
                         plugin_out = ["No custom (non UKCP) plugins were detected"]
 
         # Check for "None" entries
-        logger.debug(return_user_data)
         if return_user_data["realname"] is None:
             manual_entry(realname=True)
         if return_user_data["certificate"] is None:
@@ -392,9 +391,9 @@ class CurrentInstallation:
                 print(f"Plugins:\t\t{i}")
             else:
                 print(f"\t\t\t{i}")
-        print(f"VCCS Nickname:\t\t{return_user_data['certificate']}\t\tNote: This has just been copied from your certificate")
-        print(f"VCCS G2A PTT:\t\t{return_user_data['vccs_ptt_g2a']}")
-        print(f"VCCS G2G PTT:\t\t{return_user_data['vccs_ptt_g2g']}")
+        print(f"VCCS Nickname:\t\t{return_user_data['certificate']}\t\tnote: this has just been copied from your certificate")
+        print(f"VCCS G2A PTT:\t\t{return_user_data['vccs_ptt_g2a']}\t\tnote: this is a scancode representation of a phyiscal key")
+        print(f"VCCS G2G PTT:\t\t{return_user_data['vccs_ptt_g2g']}\t\tnote: this is a scancode representation of a phyiscal key")
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_mode']}")
         print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_mode']}")
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_device']}")
@@ -483,12 +482,21 @@ class CurrentInstallation:
             sf_replace = sector_file.replace("\\", "\\\\")
 
             chk = False
+            plugin_count = set()
             for line in lines:
                 # Add the sector file path
                 content = re.sub(r"^Settings\tsector\t(.*)", sf_replace, line)               
               
                 # Write the updated content back to the file
                 file.write(content)
+
+                # See if this line relates to plugins and determine what number they go up to
+                # This is only applied on a fresh pull
+                plugin_chk = re.match(r"^Plugins\tPlugin([\d]{1})\t.*", line)
+                if plugin_chk:
+                    plugin_count.add(plugin_chk.group(1))
+
+            logger.trace(f"Plugin count set: {sorted(plugin_count)}")
             file.truncate()
 
             # Append user settings to the file
@@ -500,6 +508,10 @@ class CurrentInstallation:
                 apply_settings.append(f"LastSession\tpassword\t{settings_prf['password']}")
                 # apply_settings.append(f"LastSession\tfacility\t{settings_prf['facility']}")
                 apply_settings.append(f"LastSession\trating\t{settings_prf['rating']}")
+
+                start_count_plugin = int(sorted(plugin_count)[-1]) + 1
+                for count, plugin_fn in enumerate(settings_prf["plugins"], start_count_plugin):
+                    apply_settings.append(f"Plugins\tPlugin{count}\t{plugin_fn}")
 
                 if settings_prf['vccs_ptt_g2a'] is not None:
                     apply_settings.append(f"TeamSpeakVccs\tTs3G2APtt\t{settings_prf['vccs_ptt_g2a']}")
