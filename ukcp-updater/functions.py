@@ -151,8 +151,6 @@ class Downloader:
                                     chk = re.match(r"^\+([A-Za-z]+.*)", d)
                                     if chk:
                                         logger.debug(chk.group(1))
-                                #print(file_diff)
-                        break
                         logger.info("Stashing changes in local repository...")
                         repo.git.stash()
                         logger.success(repo.git.rev_parse("stash@{0}"))
@@ -401,10 +399,125 @@ class CurrentInstallation:
         print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_mode']}")
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_device']}")
         print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_device']}")
+        input("Press ENTER to continue...")
         
         return return_user_data
-                                
 
+    def apply_settings(self, settings_prf:dict, settings_asr:dict) -> bool:
+        """Applies settings to relevant files"""
+
+        def iter_files(ext:str, file_mode:str):
+            """Iterate over files in the directory and search within each file"""
+            def decorator_func(func):
+                def wrapper(*args, **kwargs):
+                    for root, dirs, files in os.walk(self.ukcp_location):
+                        for file_name in files:
+                            if file_name.endswith(ext):
+                                file_path = os.path.join(root, file_name)
+                                logger.debug(f"Found {file_path}")
+                                with open(file_path, file_mode) as file:
+                                    lines = file.readlines()
+                                    file.seek(0)
+                                    func(lines, file, file_path, *args, **kwargs)
+                return wrapper
+            return decorator_func
+        
+        def get_sector_file() -> str:
+            """Get the sector file name"""
+
+            sector_file = []
+            for root, dirs, files in os.walk(self.ukcp_location):
+                for file_name in files:
+                    if file_name.endswith(".sct"):
+                        sector_file.append(os.path.join(root, file_name))
+            
+            if len(sector_file) == 1:
+                logger.info(f"Sector file found at {sector_file[0]}")
+                return str(sector_file[0])
+            else:
+                logger.error(f"Sector file search found {len(sector_file)} files")
+                logger.debug(sector_file)
+                raise ValueError
+        
+        sct_file = get_sector_file()
+        sct_file_split = sct_file.split("\\")
+
+        @iter_files(".asr", "r+")
+        def asr_sector_file(lines, file, file_path):
+            """Updates all 'asr' files to include the latest sector file"""
+
+            sector_file = f"SECTORFILE:{sct_file}"
+            sector_title = f"SECTORTITLE:{sct_file_split[-1]}"
+
+            sf_replace = sector_file.replace("\\", "\\\\")
+
+            chk = False
+            for line in lines:
+                # Add the sector file path
+                content = re.sub(r"^SECTORFILE\:(.*)", sf_replace, line)
+                
+                # If no replacement is made then try the sector title
+                if content == line:
+                    content = re.sub(r"^SECTORTITLE\:(.*)", sector_title, line)
+                
+                if content != line:
+                    chk = True
+              
+                # Write the updated content back to the file
+                file.write(content)
+            file.truncate()
+
+            # If no changes have been made, add the SECTORFILE and SECTORTITLE lines
+            if not chk:
+                file.close()
+                with open(file_path, "a") as file_append:
+                    file_append.write(sector_file + "\n")
+                    file_append.write(sector_title + "\n")
+        
+        @iter_files(".prf", "r+")
+        def prf_files(lines, file, file_path):
+            """Updates all 'prf' files to include the latest sector file"""
+
+            sector_file = f"Settings\tsector\t{sct_file}"
+
+            sf_replace = sector_file.replace("\\", "\\\\")
+
+            chk = False
+            for line in lines:
+                # Add the sector file path
+                content = re.sub(r"^Settings\tsector\t(.*)", sf_replace, line)               
+              
+                # Write the updated content back to the file
+                file.write(content)
+            file.truncate()
+
+            # Append user settings to the file
+            file.close()
+            with open(file_path, "a") as file_append:
+                apply_settings = []
+                apply_settings.append(f"LastSession\trealname\t{settings_prf['realname']}")
+                apply_settings.append(f"LastSession\tcertificate\t{settings_prf['certificate']}")
+                apply_settings.append(f"LastSession\tpassword\t{settings_prf['password']}")
+                # apply_settings.append(f"LastSession\tfacility\t{settings_prf['facility']}")
+                apply_settings.append(f"LastSession\trating\t{settings_prf['rating']}")
+
+                if settings_prf['vccs_ptt_g2a'] is not None:
+                    apply_settings.append(f"TeamSpeakVccs\tTs3G2APtt\t{settings_prf['vccs_ptt_g2a']}")
+                if settings_prf['vccs_ptt_g2g'] is not None:
+                    apply_settings.append(f"TeamSpeakVccs\tTs3G2GPtt\t{settings_prf['vccs_ptt_g2g']}")
+                if (settings_prf['vccs_playback_mode'] is not None) and (settings_prf['vccs_playback_device'] is not None) and (settings_prf['vccs_capture_mode'] is not None) and (settings_prf['vccs_capture_device'] is not None):
+                    apply_settings.append(f"TeamSpeakVccs\tPlaybackMode\t{settings_prf['vccs_playback_mode']}")
+                    apply_settings.append(f"TeamSpeakVccs\tPlaybackDevice\t{settings_prf['vccs_playback_device']}")
+                    apply_settings.append(f"TeamSpeakVccs\tCaptureMode\t{settings_prf['vccs_capture_mode']}")
+                    apply_settings.append(f"TeamSpeakVccs\tCaptureDevice\t{settings_prf['vccs_capture_device']}")
+
+                for setting in apply_settings:
+                    file_append.write(setting + "\n")
+        
+        asr_sector_file()
+        prf_files()
+            
+                                
 class Euroscope:
     """
     Check the version of EuroScope currently installed
