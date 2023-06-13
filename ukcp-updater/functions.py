@@ -507,16 +507,22 @@ class CurrentInstallation:
             file.close()
             with open(file_path, "a") as file_append:
                 apply_settings = []
+                # Session settings
                 apply_settings.append(f"LastSession\trealname\t{settings_prf['realname']}")
                 apply_settings.append(f"LastSession\tcertificate\t{settings_prf['certificate']}")
                 apply_settings.append(f"LastSession\tpassword\t{settings_prf['password']}")
                 # apply_settings.append(f"LastSession\tfacility\t{settings_prf['facility']}")
                 apply_settings.append(f"LastSession\trating\t{settings_prf['rating']}")
 
+                # Plugin settings
                 start_count_plugin = int(sorted(plugin_count)[-1]) + 1
                 for count, plugin_fn in enumerate(settings_prf["plugins"], start_count_plugin):
                     apply_settings.append(f"Plugins\tPlugin{count}\t{plugin_fn}")
 
+                # VCCS settings
+                apply_settings.append(f"TeamSpeakVccs\tTs3NickName\t{settings_prf['certificate']}")
+                apply_settings.append("TeamSpeakVccs\tTsVccsMiniControlX\t1581")
+                apply_settings.append("TeamSpeakVccs\tTsVccsMiniControlY\t198")
                 if settings_prf['vccs_ptt_g2a'] is not None:
                     apply_settings.append(f"TeamSpeakVccs\tTs3G2APtt\t{settings_prf['vccs_ptt_g2a']}")
                 if settings_prf['vccs_ptt_g2g'] is not None:
