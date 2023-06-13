@@ -537,8 +537,21 @@ class CurrentInstallation:
                 for setting in apply_settings:
                     file_append.write(setting + "\n")
         
+        @iter_files(".txt", "r+")
+        def txt_files(lines, file, file_path):
+            """Updates txt (settings) files"""
+
+            # Do this with **all** screen setting files
+            if re.match(r"^.*\_APP\_Screen.txt", file_path):
+                show_vccs = "m_ShowTsVccsMiniControl:1"
+                for line in lines:
+                    content = re.sub(r"^m\_ShowTsVccsMiniControl\:[1|0]{1}", show_vccs, line)
+                    file.write(content)
+                file.truncate()
+
         asr_sector_file()
         prf_files()
+        txt_files()
             
                                 
 class Euroscope:
