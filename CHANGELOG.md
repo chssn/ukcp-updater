@@ -1,5 +1,19 @@
 <!--next-version-placeholder-->
 
+## v0.4.0 (2023-06-13)
+
+### Feature
+
+* Renamed module to ukcpUpdater ([`3dd238e`](https://github.com/chssn/ukcp-updater/commit/3dd238e60a59d307d3da65225e1ed5c25f51d629))
+
+### Fix
+
+* No ability to skip one or all files ([`0a873a4`](https://github.com/chssn/ukcp-updater/commit/0a873a45f29c55615a939c02cc35c06ecf68b002))
+
+### Documentation
+
+* Improved user notifications ([`aa470a5`](https://github.com/chssn/ukcp-updater/commit/aa470a51c8b71d309d5073237e9ce1d0b2d6f965))
+
 ## v0.3.2 (2023-06-13)
 
 ### Fix
