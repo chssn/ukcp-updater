@@ -527,6 +527,7 @@ class CurrentInstallation:
                     apply_settings.append(f"TeamSpeakVccs\tCaptureMode\t{settings_prf['vccs_capture_mode']}")
                     apply_settings.append(f"TeamSpeakVccs\tCaptureDevice\t{settings_prf['vccs_capture_device']}")
 
+                file_append.write("\n")
                 for setting in apply_settings:
                     file_append.write(setting + "\n")
         
