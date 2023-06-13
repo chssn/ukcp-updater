@@ -1,5 +1,15 @@
 <!--next-version-placeholder-->
 
+## v0.3.2 (2023-06-13)
+
+### Fix
+
+* Corrected git stash handling ([`cb3f117`](https://github.com/chssn/ukcp-updater/commit/cb3f1177a7cb0b9812ff50cd335ce4f8dec017e2))
+
+### Performance
+
+* Used single class var ([`417cddf`](https://github.com/chssn/ukcp-updater/commit/417cddfa5e07d17bd6546360a16cad7f730f5ee5))
+
 ## v0.3.1 (2023-06-13)
 
 ### Fix
