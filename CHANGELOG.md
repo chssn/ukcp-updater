@@ -1,5 +1,18 @@
 <!--next-version-placeholder-->
 
+## v0.3.0 (2023-06-13)
+
+### Feature
+
+* Added plugin options ([`7cb4d72`](https://github.com/chssn/ukcp-updater/commit/7cb4d72ed5a6f60c92fbd56bef3bd6914f8d56a0))
+
+### Fix
+
+* Set display of vccs mini screen default on ([`6b67895`](https://github.com/chssn/ukcp-updater/commit/6b67895a58647f827b5c2178e6be193c440c7f7c))
+* Vccs not populatting correctly ([`4f6e40d`](https://github.com/chssn/ukcp-updater/commit/4f6e40d255668197f784240922f261e9eee2c202))
+* No newline feed when appending to prf file ([`7831d5a`](https://github.com/chssn/ukcp-updater/commit/7831d5a04972da80852d18a64c8c0b249f424067))
+* Handle multiple plugins correctly ([`1461fbd`](https://github.com/chssn/ukcp-updater/commit/1461fbd2c16b3127c12b26a3a47a50ad95f1229d))
+
 ## v0.2.0 (2023-06-12)
 
 ### Feature
