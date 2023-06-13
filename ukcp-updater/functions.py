@@ -627,8 +627,11 @@ class CurrentInstallation:
                             file.write(content)
                         file.truncate()
 
+        logger.info("Updating references to SECTORFILE and SECTORTITLE")
         asr_sector_file()
+        logger.info("Updating your login and VCCS details")
         prf_files()
+        logger.info("Updating any other settings you have opted to carry over")
         txt_files()
             
                                 
