@@ -19,6 +19,7 @@ def main():
 
     # Intro
     os.system("cls")
+    print("-" * 60)
     print(f"VATSIM UK Controller Pack Updater v{ukcpUpdater.__version__}")
     print("-" * 60)
 
