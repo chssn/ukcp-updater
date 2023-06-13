@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Standard Libraries
+import csv
 import ctypes
 import hashlib
 import os
@@ -132,28 +133,42 @@ class Downloader:
                     repo.git.checkout(self.branch)
                     switch = False
                 except git.exc.GitCommandError as err:
-                    logger.warning(f"'git checkout {self.branch}' failed due to local changes not being saved...")
+                    logger.warning(f"'git checkout {self.branch}' failed due to local changes not being saved... This is quite normal!")
                     commit = repo.head.commit
 
                     # Get the changed files
                     changed_files = [item.a_path for item in commit.diff(None)]
                     if changed_files:
-                        # Get the latest tag (local)
-                        tags = self.get_remote_tags()
-                        logger.info(f"Diff local changes against tag {tags[-1]}")
-                        for file in changed_files:
-                            # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
-                            if str(file).split(".")[-1] not in ["prf", "sct", "rwy", "ese"]:
-                                logger.info(file)
-                                file_diff = repo.git.diff(tags[-1], file)
-                                for d in str(file_diff).split("\n"):
-                                    # Only look for additions not deletions
-                                    chk = re.match(r"^\+([A-Za-z]+.*)", d)
-                                    if chk:
-                                        logger.trace(chk.group(1))
-                        logger.info("Stashing changes in local repository...")
-                        repo.git.stash()
-                        logger.success(repo.git.rev_parse("stash@{0}"))
+                        with open("local/settings.csv", "w") as f_set:
+                            f_set.write(f"filepath,data\n")
+                            # Get the latest tag (local)
+                            tags = self.get_remote_tags()
+                            logger.info(f"Comparing local changes against tag {tags[-1]} - this will take a minute or so to do...")
+                            for file in changed_files:
+                                # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
+                                if str(file).split(".")[-1] not in ["prf", "sct", "rwy", "ese"]:
+                                    logger.trace(file)
+                                    file_diff = repo.git.diff(tags[-1], file)
+                                    header = False
+                                    for d in str(file_diff).split("\n"):
+                                        # Only look for additions not deletions
+                                        chk = re.match(r"^[\+]([A-Za-z]+.*)", d)
+                                        # Exclude any line starting with SECTORFILE or SECTORTITLE - it's a given these will change
+                                        exclude_sector_info = re.match(r"^\+SECTOR[FILE|TITLE].*", d)
+                                        # Exclude the last line as git will match it as a change if anything is appended below
+                                        exclude_gnd_trail_dots = re.match(r"^\+PLUGIN:vSMR:GndTrailsDots.*", d)
+                                        if chk and not exclude_sector_info and not exclude_gnd_trail_dots:
+                                            if not header:
+                                                logger.info(file)
+                                                header = True
+                                            logger.success(f"Change identified: {chk.group(1)}")
+                                            add_setting = input("Do you want to retain this setting? [y|N]")
+                                            if add_setting.upper() == "Y":
+                                                f_set.write(f"{file},{chk.group(1)}\n")
+                                            
+                            logger.info("Stashing changes in local repository...")
+                            repo.git.stash()
+                            logger.success(repo.git.rev_parse("stash@{0}"))
                     else:
                         logger.info("No changed files.")
 
@@ -548,6 +563,35 @@ class CurrentInstallation:
                     content = re.sub(r"^m\_ShowTsVccsMiniControl\:[1|0]{1}", show_vccs, line)
                     file.write(content)
                 file.truncate()
+            
+            # Do this with **all** *_APP_DL.txt setting files (Departure List)
+            if re.match(r"^.*\_APP\_DL.txt", file_path):
+                set_squawk_ukcp = "m_Column:ASSR:5:1:60:9000:9022:1::UK Controller Plugin:UK Controller Plugin:0:0.0"
+                for line in lines:
+                    content = re.sub(r"^m_Column:ASSR", set_squawk_ukcp, line)
+                    file.write(content)
+                file.truncate()
+            
+            # Add stored settings from earlier into txt files
+            with open("local/settings.csv", "r") as csv_in:
+                data_in = csv.DictReader(csv_in)
+                for row in data_in:
+                    if row["filepath"].replace("/", "\\") in str(file_path):
+                        logger.debug(f"Change detected: {row['data']}")
+
+                        # Split the string by ':' and use this as a counter
+                        data_count = row['data'].split(':')
+                        if len(data_count) == 2:
+                            search_string = f"{data_count[0]}"
+                        elif len(data_count) > 2:
+                            search_string = f"{data_count[0]}:{data_count[1]}"
+
+                        for line in lines:
+                            content = re.sub(rf"^{search_string}\:.*", row['data'], line)
+                            if content != line:
+                                logger.info(content.strip())
+                            file.write(content)
+                        file.truncate()
 
         asr_sector_file()
         prf_files()
