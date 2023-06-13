@@ -144,7 +144,10 @@ class Downloader:
                             # Get the latest tag (local)
                             tags = self.get_remote_tags()
                             logger.info(f"Comparing local changes against tag {tags[-1]} - this will take a minute or so to do...")
+                            break_flag = False
                             for file in changed_files:
+                                if break_flag:
+                                    break
                                 # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
                                 if str(file).split(".")[-1] not in ["prf", "sct", "rwy", "ese"]:
                                     logger.trace(file)
@@ -162,9 +165,14 @@ class Downloader:
                                                 logger.info(file)
                                                 header = True
                                             logger.success(f"Change identified: {chk.group(1)}")
-                                            add_setting = input("Do you want to retain this setting? [y|N]")
+                                            add_setting = input("Do you want to retain this setting? [y]es | [N]o | [s]kip file | skip [a]ll: ")
                                             if add_setting.upper() == "Y":
                                                 f_set.write(f"{file},{chk.group(1)}\n")
+                                            elif add_setting.upper() == "S":
+                                                break
+                                            elif add_setting.upper() == "A":
+                                                break_flag = True
+                                                break
                                             
                             logger.info("Stashing changes in local repository...")
                             repo.git.stash()
