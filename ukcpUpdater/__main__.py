@@ -1,15 +1,27 @@
 #!/usr/bin/env python3
 
 # Standard Libraries
+import os
+import sys
 
 # Third Party Libraries
 from loguru import logger
 
 # Local Libraries
+import ukcpUpdater
 from . import functions
 
 @logger.catch
 def main():
+    # Set debug level
+    logger.remove()
+    logger.add(sys.stderr, level="INFO")
+
+    # Intro
+    os.system("cls")
+    print(f"VATSIM UK Controller Pack Updater v{ukcpUpdater.__version__}")
+    print("-" * 60)
+
     # Check that git is installed
     git = functions.Downloader()
     if git.check_requirements():
