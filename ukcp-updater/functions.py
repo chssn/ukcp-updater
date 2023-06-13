@@ -358,16 +358,20 @@ class CurrentInstallation:
                     if plugins:
                         logger.info("The following custom (non UKCP) plugins have been detected:")
                         plugin_out = []
+
+                        # Loop over the plugins and ask for confirmation for each one
                         for i in list(plugins):
-                            p_out = str(i).split("\\")[-1]
-                            logger.info(p_out)
-                            plugin_out.append(str(i))
-                        response = input("Do you want to add these plugins to every profile? [Y|n] ")
-                        if response.upper() == "N":
-                            plugin_out = ["Not selected"]
+                            print(i)
+                            response = input(f"Do you want to add this plugin? [Y|n] ")
+                            if response.upper() == "N":
+                                continue
+                            else:
+                                plugin_out.append(str(i))
                     else:
                         logger.info("No custom (non UKCP) plugins were detected")
                         plugin_out = ["No custom (non UKCP) plugins were detected"]
+                    
+                    return_user_data["plugins"] = plugin_out
 
         # Check for "None" entries
         if return_user_data["realname"] is None:
