@@ -207,6 +207,32 @@ class Downloader:
                 return True
         logger.error(f"Folder {folder} was not found!")
         return False
+    
+    def drop_stash(self) -> None:
+        """Drop the stash once upgrade completed"""
+
+        # Open the repository
+        repo = git.Repo(self.git_path)
+
+        # Drop the stash
+        if repo.head.is_valid():
+            logger.debug(repo)
+            logger.debug(f"git rev-parse stash@{repo.git.rev_parse('stash@{0}')}")
+            stash_list = repo.git.stash("list")
+            logger.debug(stash_list)
+            stash_list = stash_list.split("\n")
+            if stash_list:
+                # Work through the list in reverse as git will 'bump' everything down
+                for s in reversed(stash_list):
+                    repo.git.stash("drop", str(s).split(":")[0])
+                    logger.debug(f"{str(s).split(':')[0]} has been dropped")
+            else:
+                logger.info("No stash to delete")
+                return None
+        else:
+            logger.error(f"Invalid response for repo head {repo} {repo.head}")
+            return None
+        logger.success("Stashed files have been removed")
 
 
 class CurrentInstallation:

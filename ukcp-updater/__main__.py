@@ -26,5 +26,8 @@ def main():
         # Append user settings
         update.apply_settings(user_settings, {"None": None})
 
+        # Drop the stashed files
+        git.drop_stash()
+
 if __name__ == "__main__":
     main()
