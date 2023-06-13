@@ -105,7 +105,7 @@ class Downloader:
     
     def clone(self) -> bool:
         """Perform the clone operation. Returns TRUE if the folder already exists and FALSE if not"""
-        folder = f"{self.euroscope_appdata}\\{self.git_folder}"
+        folder = f"{self.git_path}"
         if os.path.exists(folder):
             logger.success(f"The repo has already been cloned to {folder}")
             return True
