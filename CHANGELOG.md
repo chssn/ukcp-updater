@@ -1,5 +1,11 @@
 <!--next-version-placeholder-->
 
+## v0.3.1 (2023-06-13)
+
+### Fix
+
+* Multiple changes not written to new files ([`16f5f08`](https://github.com/chssn/ukcp-updater/commit/16f5f08cd5d4682c8fbeff18330d8a1eda96c3d7))
+
 ## v0.3.0 (2023-06-13)
 
 ### Feature
