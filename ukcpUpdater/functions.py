@@ -3,12 +3,14 @@
 # Standard Libraries
 import csv
 import ctypes
+import datetime
 import hashlib
 import os
 import re
 import subprocess
 from distutils.version import LooseVersion
 from getpass import getpass
+from math import floor
 from tkinter import Tk
 from tkinter import filedialog
 
@@ -18,6 +20,58 @@ import pandas as pd
 from loguru import logger
 
 # Local Libraries
+
+class Airac:
+    """Class for general functions relating to AIRAC"""
+
+    def __init__(self):
+        # First AIRAC date following the last cycle length modification
+        startDate = "2019-01-02"
+        self.baseDate = datetime.date.fromisoformat(str(startDate))
+        # Length of one AIRAC cycle
+        self.cycleDays = 28
+        # Today
+        self.todayDate = datetime.datetime.now().date()
+
+    def initialise(self, dateIn=0) -> int:
+        """Calculate the number of AIRAC cycles between any given date and the start date"""
+        if dateIn:
+            inputDate = datetime.date.fromisoformat(str(dateIn))
+        else:
+            inputDate = datetime.date.today()
+
+        # How many AIRAC cycles have occured since the start date
+        diffCycles = (inputDate - self.baseDate) / datetime.timedelta(days=1)
+        # Round that number down to the nearest whole integer
+        numberOfCycles = floor(diffCycles / self.cycleDays)
+
+        return numberOfCycles
+
+    def currentCycle(self) -> str:
+        """Return the date of the current AIRAC cycle"""
+        def cycle(sub:int=0):
+            numberOfCycles = self.initialise() - sub
+            numberOfDays = numberOfCycles * self.cycleDays + 1
+            currentCycle = self.baseDate + datetime.timedelta(days=numberOfDays)
+            return currentCycle
+        
+        currentCycle = cycle()
+        if currentCycle > self.todayDate:
+            currentCycle = cycle(sub=1)
+
+        logger.info("Current AIRAC Cycle is: {}", currentCycle)
+
+        return currentCycle
+    
+    def currentTag(self) -> str:
+        """Returns the current tag for use with git"""
+        currentCycle = self.currentCycle()
+        # Split the currentCycle by '-' and return in format yyyy/mm
+        split_cc = str(currentCycle).split("-")
+        logger.debug(f"Current tag should be {split_cc[0]}/{split_cc[1]}")
+
+        return f"{split_cc[0]}/{split_cc[1]}"
+
 
 class Downloader:
     """

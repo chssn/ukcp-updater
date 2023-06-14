@@ -9,7 +9,7 @@ from loguru import logger
 
 # Local Libraries
 import ukcpUpdater
-from . import functions
+from ukcpUpdater import functions
 
 @logger.catch
 def main():
@@ -21,6 +21,7 @@ def main():
     os.system("cls")
     print("-" * 60)
     print(f"VATSIM UK Controller Pack Updater v{ukcpUpdater.__version__}")
+    print("https://github.com/chssn/ukcp-updater")
     print("-" * 60)
 
     # Check that git is installed
@@ -41,6 +42,9 @@ def main():
 
         # Drop the stashed files
         git.drop_stash()
+
+        # Final check before closing
+        input("Update has completed. Press ENTER to close this window...")
 
 if __name__ == "__main__":
     main()
