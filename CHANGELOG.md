@@ -1,5 +1,11 @@
 <!--next-version-placeholder-->
 
+## v0.5.0 (2023-06-14)
+
+### Feature
+
+* Installer ([`3d98503`](https://github.com/chssn/ukcp-updater/commit/3d98503ef89a972eec5588796157c6665142c88d))
+
 ## v0.4.0 (2023-06-13)
 
 ### Feature
