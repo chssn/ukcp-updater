@@ -81,7 +81,7 @@ class Downloader:
     Downloads the latest version of UKCP
     """
 
-    def __init__(self, main_branch:bool=False, git_folder:str="uk-controller-pack", branch:str="main") -> None:
+    def __init__(self, git_folder:str="uk-controller-pack", branch:str="main") -> None:
         # Currently hardcoded for VATSIM UK
         self.repo_url = "https://github.com/VATSIM-UK/uk-controller-pack.git"
 
