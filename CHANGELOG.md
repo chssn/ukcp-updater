@@ -1,5 +1,16 @@
 <!--next-version-placeholder-->
 
+## v0.6.0 (2023-06-17)
+
+### Feature
+
+* Sector file download ([`99f0b55`](https://github.com/chssn/ukcp-updater/commit/99f0b553cd8f372d3b084af6e9b73d381454480e))
+
+### Fix
+
+* Corrected git checkout for tags ([`7c2f25c`](https://github.com/chssn/ukcp-updater/commit/7c2f25c4a3d9f99e615ecb96d98cf5bcb635afc4))
+* Git diff when file does not exist ([`991301a`](https://github.com/chssn/ukcp-updater/commit/991301adf1b58794e1fb10fbf00b244cdd437742))
+
 ## v0.5.0 (2023-06-14)
 
 ### Feature
