@@ -110,40 +110,42 @@ class Downloader:
             return tags
         return []
 
+    @staticmethod
+    def is_git_installed() -> bool:
+        try:
+            # Execute the git command to check if it is recognized
+            version = subprocess.check_output(['git', '--version'])
+            logger.debug(f"Git is installed - {str(version.decode()).strip()}")
+            return True
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            return False
+    
+    @staticmethod
+    def install_git() -> bool:
+        """Trys to install the git package"""
+        logger.info("Lauching PowerShell to run the following command: winget install --id Git.Git -e --source winget")
+        logger.info("You can find out more about winget here - https://learn.microsoft.com/en-us/windows/package-manager/winget/")
+
+        # Launch the shell
+        process = subprocess.Popen(["powershell.exe", "-Command", "winget install --id Git.Git -e --source winget"])
+
+        # Wait for the process to complete and get the exit status
+        process.communicate()
+        exit_status = process.returncode
+
+        # Continue with the remaining code or perform actions based on the exit status
+        if exit_status == 0:
+            logger.success("PowerShell command executed successfully.")
+            return True
+        else:
+            logger.error("PowerShell command failed with exit status:", exit_status)
+            return False
+
     def check_requirements(self) -> bool:
         """Checks to see if the basic requirements are satisfied"""
 
-        def is_git_installed() -> bool:
-            try:
-                # Execute the git command to check if it is recognized
-                version = subprocess.check_output(['git', '--version'])
-                logger.debug(f"Git is installed - {str(version.decode()).strip()}")
-                return True
-            except (FileNotFoundError, subprocess.CalledProcessError):
-                return False
-        
-        def install_git() -> bool:
-            """Trys to install the git package"""
-            logger.info("Lauching PowerShell to run the following command: winget install --id Git.Git -e --source winget")
-            logger.info("You can find out more about winget here - https://learn.microsoft.com/en-us/windows/package-manager/winget/")
-
-            # Launch the shell
-            process = subprocess.Popen(["powershell.exe", "-Command", "winget install --id Git.Git -e --source winget"])
-
-            # Wait for the process to complete and get the exit status
-            process.communicate()
-            exit_status = process.returncode
-
-            # Continue with the remaining code or perform actions based on the exit status
-            if exit_status == 0:
-                logger.success("PowerShell command executed successfully.")
-                return True
-            else:
-                logger.error("PowerShell command failed with exit status:", exit_status)
-                return False
-
         # Test if Git is installed
-        if not is_git_installed():
+        if not self.is_git_installed():
             logger.error("Git is not installed")
             print("For this tool to work properly, the 'git' package is required.")
             print("This tool can automatically download the 'git' package from:")
@@ -154,8 +156,7 @@ class Downloader:
                     logger.success("Git has been installed")
                     return True
             return False
-        else:
-            return True
+        return True
     
     def clone(self) -> bool:
         """Perform the clone operation. Returns TRUE if the folder already exists and FALSE if not"""
