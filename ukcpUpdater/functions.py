@@ -673,6 +673,8 @@ class CurrentInstallation:
                             search_string = f"{data_count[0]}"
                         elif len(data_count) > 2:
                             search_string = f"{data_count[0]}:{data_count[1]}"
+                        else:
+                            logger.error(f"Unable to generate search string for {row['filepath']}")
 
                         for line in lines:
                             content = re.sub(rf"^{search_string}\:.*", row['data'], line)
