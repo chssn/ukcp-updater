@@ -35,7 +35,7 @@ class Airac:
         # Today
         self.todayDate = datetime.datetime.now().date()
 
-    def initialise(self, dateIn=0) -> int:
+    def initialise(self, dateIn:str=0) -> int:
         """Calculate the number of AIRAC cycles between any given date and the start date"""
         if dateIn:
             inputDate = datetime.date.fromisoformat(str(dateIn))
@@ -46,6 +46,7 @@ class Airac:
         diffCycles = (inputDate - self.baseDate) / datetime.timedelta(days=1)
         # Round that number down to the nearest whole integer
         numberOfCycles = floor(diffCycles / self.cycleDays)
+        logger.debug(f"{numberOfCycles} AIRAC cycles since {inputDate}")
 
         return numberOfCycles
 
@@ -63,7 +64,7 @@ class Airac:
 
         logger.info("Current AIRAC Cycle is: {}", currentCycle)
 
-        return currentCycle
+        return str(currentCycle)
     
     def currentTag(self) -> str:
         """Returns the current tag for use with git"""
