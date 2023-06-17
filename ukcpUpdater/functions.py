@@ -592,7 +592,7 @@ class CurrentInstallation:
             plugin_count = set()
             for line in lines:
                 # Add the sector file path
-                content = re.sub(r"^Settings\tsector\t(.*)", sf_replace, line)               
+                content = re.sub(r"^Settings\tsector\t(.*)", sf_replace, line)
               
                 # Write the updated content back to the file
                 file.write(content)
