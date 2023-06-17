@@ -203,7 +203,7 @@ class Downloader:
                                 if break_flag:
                                     break
                                 # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
-                                if str(file).split(".")[-1] not in ["prf", "sct", "rwy", "ese"]:
+                                if str(file).split(".")[-1] not in ["prf", "sct", "rwy", "ese"] and os.path.exists(file):
                                     logger.trace(file)
                                     file_diff = repo.git.diff(tags[-1], file)
                                     header = False
