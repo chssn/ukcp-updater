@@ -16,6 +16,8 @@ from tkinter import filedialog
 
 # Third Party Libraries
 import git
+import py7zr
+import requests
 import pandas as pd
 from loguru import logger
 
@@ -82,12 +84,9 @@ class Downloader:
         # Currently hardcoded for VATSIM UK
         self.repo_url = "https://github.com/VATSIM-UK/uk-controller-pack.git"
 
-        # Should the app clone the bleeding edge repo or the latest stable release
-        # Default is for the latest stable release
-        if main_branch:
-            self.tag = "main"
-        else:
-            self.tag = "2023/05"
+        # Get the current AIRAC
+        airac = Airac()
+        self.airac = airac.currentTag()
 
         # Where should the app download to?
         # Default is the EuroScope folder in APPDATA
@@ -308,6 +307,13 @@ class CurrentInstallation:
 
     def __init__(self) -> None:
         self.ukcp_location = self.location()
+
+        # Get the current AIRAC cycle
+        airac = Airac()
+        self.airac = airac.currentTag()
+
+        # Sector file base URL
+        self.sector_url = "http://www.vatsim.uk/files/sector/esad/"
 
     @staticmethod
     def location() -> str:
@@ -536,18 +542,51 @@ class CurrentInstallation:
             """Get the sector file name"""
 
             sector_file = []
+            sector_fn = []
             for root, dirs, files in os.walk(self.ukcp_location):
                 for file_name in files:
                     if file_name.endswith(".sct"):
                         sector_file.append(os.path.join(root, file_name))
+                        sector_fn.append(file_name)
             
-            if len(sector_file) == 1:
+            if len(sector_file) == 1 and len(sector_fn) == 1:
                 logger.info(f"Sector file found at {sector_file[0]}")
+                
+                # Check the sector file matches the current AIRAC cycle
+                airac_format = str(self.airac.replace("/", "_"))
+                if airac_format not in sector_file[0]:
+                    logger.warning(f"Your sector file appears out of date with the current {self.airac} release!")
+                    dl_sector = input("Would you like to download the latest sector file? [Y|n] ")
+                    if str(dl_sector).upper() != "N":
+                        # Download the latest file
+                        url = f"{self.sector_url}UK_{airac_format}.7z"
+                        logger.debug(f"Sector file url {url}")
+                        sector_7z = requests.get(url)
+
+                        # Write it to local file
+                        file_path = f"local\\UK_{airac_format}.7z"
+                        with open(file_path, "wb") as file:
+                            file.write(sector_7z.content)
+                        
+                        # Extract the contents of the archive
+                        with py7zr.SevenZipFile(file_path, mode="r") as archive:
+                            archive.extractall(path=f"{self.ukcp_location}\\Data\\Sector")
+                        
+                        # Clean up artifacts
+                        os.remove(file_path)
+                        # Clean up old sector files
+                        ext = ["ese", "rwy", "sct"]
+                        logger.debug(f"Sector file name{sector_fn}")
+                        for e in ext:
+                            os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.')[0]}.{e}")
+                        
+                        # Return the newly downloaded sector file
+                        return str(f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct")
                 return str(sector_file[0])
             else:
-                logger.error(f"Sector file search found {len(sector_file)} files")
+                logger.error(f"Sector file search found {len(sector_file)} files. You should only have one of these!")
                 logger.debug(sector_file)
-                raise ValueError
+                raise ValueError(f"{len(sector_file)} sector files were found when there should only be one")
         
         sct_file = get_sector_file()
         sct_file_split = sct_file.split("\\")
