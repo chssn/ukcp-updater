@@ -264,9 +264,9 @@ class Downloader:
 
                     # Find the tags associated with the commit
                     tag = None
-                    for t in repo.tags:
-                        if t.commit == commit:
-                            tag = t.name
+                    for r_tag in repo.tags:
+                        if r_tag.commit == commit:
+                            tag = r_tag.name
                             break
 
                     if tag:
@@ -585,8 +585,8 @@ class CurrentInstallation:
                         # Clean up old sector files
                         ext = ["ese", "rwy", "sct"]
                         logger.debug(f"Sector file name{sector_fn}")
-                        for e in ext:
-                            os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{e}")
+                        for i_ext in ext:
+                            os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{i_ext}")
 
                         # Return the newly downloaded sector file
                         return str(f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct")
