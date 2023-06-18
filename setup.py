@@ -1,4 +1,4 @@
-import ukcpUpdater
+import ukcp_updater
 from cx_Freeze import setup, Executable
 
 install_requires = []
@@ -7,7 +7,7 @@ setup_requires = []
 
 #os.add_dll_directory(os.getcwd())
 
-base = "ukcpUpdater-" + ukcpUpdater.__version__
+base = "ukcpUpdater-" + ukcp_updater.__version__
 
 # http://msdn.microsoft.com/en-us/library/windows/desktop/aa371847(v=vs.85).aspx
 shortcut_table = [
@@ -39,7 +39,7 @@ with open("requirements.txt") as f:
 setup(
     packages=["ukcpUpdater"],
     name="VATSIM UK Controller Pack Updater",
-    version=ukcpUpdater.__version__,
+    version=ukcp_updater.__version__,
     description="VATSIM UK Controller Pack Updater",
     long_description="..\README.md",
     long_description_content_type="text/markdown",

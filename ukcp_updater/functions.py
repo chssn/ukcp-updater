@@ -1,10 +1,14 @@
+"""
+UKCP Updater
+Chris Parkinson (@chssn)
+"""
+
 #!/usr/bin/env python3
 
 # Standard Libraries
 import csv
 import ctypes
 import datetime
-import hashlib
 import os
 import re
 import subprocess
@@ -18,7 +22,6 @@ from tkinter import filedialog
 import git
 import py7zr
 import requests
-import pandas as pd
 from loguru import logger
 
 # Local Libraries
@@ -106,7 +109,7 @@ class Downloader:
         if os.path.exists(self.git_path):
             repo = git.Repo(self.git_path)
             tags = [tag.name for tag in repo.tags]
-            logger.debug(tags)
+            logger.debug(f"Returned tags: {tags}")
             return tags
         return []
 
@@ -169,12 +172,13 @@ class Downloader:
             git.Repo.clone_from(self.repo_url, folder, branch=self.branch)
             logger.success("The repo has been successfully cloned")
 
-        # Checkout the latest tag
-        tags = self.get_remote_tags()
-        logger.info(f"Checking out {tags[-1]}")
-        repo = git.Repo(folder)
-        repo.git.checkout(tags[-1])
-        
+            # Checkout the latest tag
+            tags = self.get_remote_tags()
+            logger.debug(f"Returned tags: {tags}")
+            logger.info(f"Checking out {tags[-1]}")
+            repo = git.Repo(folder)
+            repo.git.checkout(tags[-1])
+            
         return False
 
     def pull(self) -> bool:
@@ -191,7 +195,7 @@ class Downloader:
                 try:
                     repo.git.checkout(self.branch)
                     switch = False
-                except git.exc.GitCommandError as err:
+                except git.exc.GitCommandError:
                     logger.warning(f"'git checkout {self.branch}' failed due to local changes not being saved... This is quite normal!")
                     commit = repo.head.commit
 

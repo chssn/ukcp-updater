@@ -1,3 +1,8 @@
+"""
+UKCP Updater
+Chris Parkinson (@chssn)
+"""
+
 #!/usr/bin/env python3
 
 # Standard Libraries
@@ -8,19 +13,19 @@ import sys
 from loguru import logger
 
 # Local Libraries
-import ukcpUpdater
-from ukcpUpdater import functions
+import ukcp_updater
+from ukcp_updater import functions
 
 @logger.catch
 def main():
     # Set debug level
     logger.remove()
-    logger.add(sys.stderr, level="INFO")
+    logger.add(sys.stderr, level="DEBUG")
 
     # Intro
     os.system("cls")
     print("-" * 60)
-    print(f"VATSIM UK Controller Pack Updater v{ukcpUpdater.__version__}")
+    print(f"VATSIM UK Controller Pack Updater v{ukcp_updater.__version__}")
     print("https://github.com/chssn/ukcp-updater")
     print("-" * 60)
 
