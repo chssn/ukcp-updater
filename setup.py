@@ -7,7 +7,7 @@ setup_requires = []
 
 #os.add_dll_directory(os.getcwd())
 
-base = "ukcpUpdater-" + ukcp_updater.__version__
+base = "ukcp_updater-" + ukcp_updater.__version__
 
 # http://msdn.microsoft.com/en-us/library/windows/desktop/aa371847(v=vs.85).aspx
 shortcut_table = [
@@ -37,7 +37,7 @@ with open("requirements.txt") as f:
     install_requires = f.read()[1:].splitlines()[1:]
 
 setup(
-    packages=["ukcpUpdater"],
+    packages=["ukcp_updater"],
     name="VATSIM UK Controller Pack Updater",
     version=ukcp_updater.__version__,
     description="VATSIM UK Controller Pack Updater",
@@ -51,7 +51,7 @@ setup(
     python_requires=">=3.9.0",
     executables=[
         Executable(
-            "ukcpUpdater\__main__.py",
+            "ukcp_updater\__main__.py",
             target_name=base,
             icon="ukcpu.ico",
             shortcut_name="UKCP Updater",
