@@ -18,6 +18,8 @@ from ukcp_updater import functions
 
 @logger.catch
 def main():
+    """Main function"""
+
     # Set debug level
     logger.remove()
     logger.add(sys.stderr, level="DEBUG")
