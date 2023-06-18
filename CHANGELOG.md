@@ -1,5 +1,11 @@
 <!--next-version-placeholder-->
 
+## v0.6.1 (2023-06-18)
+
+### Fix
+
+* Git installed without user consent ([`2ebe510`](https://github.com/chssn/ukcp-updater/commit/2ebe510308344f17202b04819cf48573ac61eff7))
+
 ## v0.6.0 (2023-06-17)
 
 ### Feature
