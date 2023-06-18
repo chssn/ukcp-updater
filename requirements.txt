@@ -1,3 +1,4 @@
-GitPython==3.1.31
-loguru==0.7.0
-pandas==2.0.2
+cx_Freeze==6.15.1
+py7zr==0.20.5
+pytest==7.3.2
+Requests==2.31.0
