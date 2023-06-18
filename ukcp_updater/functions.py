@@ -31,49 +31,49 @@ class Airac:
 
     def __init__(self):
         # First AIRAC date following the last cycle length modification
-        startDate = "2019-01-02"
-        self.baseDate = datetime.date.fromisoformat(str(startDate))
+        start_date = "2019-01-02"
+        self.base_date = datetime.date.fromisoformat(str(start_date))
         # Length of one AIRAC cycle
-        self.cycleDays = 28
+        self.cycle_days = 28
         # Today
-        self.todayDate = datetime.datetime.now().date()
+        self.today_date = datetime.datetime.now().date()
 
-    def initialise(self, dateIn:str=0) -> int:
+    def initialise(self, date_in:str=0) -> int:
         """Calculate the number of AIRAC cycles between any given date and the start date"""
-        if dateIn:
-            inputDate = datetime.date.fromisoformat(str(dateIn))
+        if date_in:
+            input_date = datetime.date.fromisoformat(str(date_in))
         else:
-            inputDate = datetime.date.today()
+            input_date = datetime.date.today()
 
         # How many AIRAC cycles have occured since the start date
-        diffCycles = (inputDate - self.baseDate) / datetime.timedelta(days=1)
+        diff_cycles = (input_date - self.base_date) / datetime.timedelta(days=1)
         # Round that number down to the nearest whole integer
-        numberOfCycles = floor(diffCycles / self.cycleDays)
-        logger.debug(f"{numberOfCycles} AIRAC cycles since {inputDate}")
+        number_of_cycles = floor(diff_cycles / self.cycle_days)
+        logger.debug(f"{number_of_cycles} AIRAC cycles since {input_date}")
 
-        return numberOfCycles
+        return number_of_cycles
 
-    def currentCycle(self) -> str:
+    def current_cycle(self) -> str:
         """Return the date of the current AIRAC cycle"""
         def cycle(sub:int=0):
-            numberOfCycles = self.initialise() - sub
-            numberOfDays = numberOfCycles * self.cycleDays + 1
-            currentCycle = self.baseDate + datetime.timedelta(days=numberOfDays)
-            return currentCycle
-        
-        currentCycle = cycle()
-        if currentCycle > self.todayDate:
-            currentCycle = cycle(sub=1)
+            number_of_cycles = self.initialise() - sub
+            number_of_days = number_of_cycles * self.cycle_days + 1
+            current_cycle = self.base_date + datetime.timedelta(days=number_of_days)
+            return current_cycle
 
-        logger.info("Current AIRAC Cycle is: {}", currentCycle)
+        current_cycle = cycle()
+        if current_cycle > self.today_date:
+            current_cycle = cycle(sub=1)
 
-        return str(currentCycle)
-    
-    def currentTag(self) -> str:
+        logger.info("Current AIRAC Cycle is: {}", current_cycle)
+
+        return str(current_cycle)
+
+    def current_tag(self) -> str:
         """Returns the current tag for use with git"""
-        currentCycle = self.currentCycle()
-        # Split the currentCycle by '-' and return in format yyyy/mm
-        split_cc = str(currentCycle).split("-")
+        current_cycle = self.current_cycle()
+        # Split the current_cycle by '-' and return in format yyyy/mm
+        split_cc = str(current_cycle).split("-")
         logger.debug(f"Current tag should be {split_cc[0]}/{split_cc[1]}")
 
         return f"{split_cc[0]}/{split_cc[1]}"
@@ -90,7 +90,7 @@ class Downloader:
 
         # Get the current AIRAC
         airac = Airac()
-        self.airac = airac.currentTag()
+        self.airac = airac.current_tag()
 
         # Where should the app download to?
         # Default is the EuroScope folder in APPDATA
@@ -115,6 +115,7 @@ class Downloader:
 
     @staticmethod
     def is_git_installed() -> bool:
+        """Checks to see if the git package is installed"""
         try:
             # Execute the git command to check if it is recognized
             version = subprocess.check_output(['git', '--version'])
@@ -122,7 +123,7 @@ class Downloader:
             return True
         except (FileNotFoundError, subprocess.CalledProcessError):
             return False
-    
+
     @staticmethod
     def install_git() -> bool:
         """Trys to install the git package"""
@@ -160,7 +161,7 @@ class Downloader:
                     return True
             return False
         return True
-    
+
     def clone(self) -> bool:
         """Perform the clone operation. Returns TRUE if the folder already exists and FALSE if not"""
         folder = f"{self.git_path}"
@@ -178,7 +179,7 @@ class Downloader:
             logger.info(f"Checking out {tags[-1]}")
             repo = git.Repo(folder)
             repo.git.checkout(tags[-1])
-            
+
         return False
 
     def pull(self) -> bool:
@@ -186,7 +187,7 @@ class Downloader:
         folder = f"{self.euroscope_appdata}\\{self.git_folder}"
         if os.path.exists(folder):
             logger.info(f"Pulling changes from {self.repo_url} to {folder}")
-            
+
             # Open the repository
             repo = git.Repo(folder)
             # Try and switch to the main branch (ie not a tag or commit)
@@ -202,8 +203,8 @@ class Downloader:
                     # Get the changed files
                     changed_files = [item.a_path for item in commit.diff(None)]
                     if changed_files:
-                        with open("local/settings.csv", "w") as f_set:
-                            f_set.write(f"filepath,data\n")
+                        with open("local/settings.csv", "w", encoding="utf-8") as f_set:
+                            f_set.write("filepath,data\n")
                             # Get the latest tag (local)
                             tags = self.get_remote_tags()
                             logger.info(f"Comparing local changes against tag {tags[-1]} - this will take a minute or so to do...")
@@ -212,17 +213,17 @@ class Downloader:
                                 if break_flag:
                                     break
                                 # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
-                                if str(file).split(".")[-1] not in ["prf", "sct", "rwy", "ese"] and os.path.exists(file):
+                                if str(file).rsplit(".", maxsplit=1)[-1] not in ["prf", "sct", "rwy", "ese"] and os.path.exists(file):
                                     logger.trace(file)
                                     file_diff = repo.git.diff(tags[-1], file)
                                     header = False
-                                    for d in str(file_diff).split("\n"):
+                                    for d_file in str(file_diff).split("\n"):
                                         # Only look for additions not deletions
-                                        chk = re.match(r"^[\+]([A-Za-z]+.*)", d)
+                                        chk = re.match(r"^[\+]([A-Za-z]+.*)", d_file)
                                         # Exclude any line starting with SECTORFILE or SECTORTITLE - it's a given these will change
-                                        exclude_sector_info = re.match(r"^\+SECTOR[FILE|TITLE].*", d)
+                                        exclude_sector_info = re.match(r"^\+SECTOR[FILE|TITLE].*", d_file)
                                         # Exclude the last line as git will match it as a change if anything is appended below
-                                        exclude_gnd_trail_dots = re.match(r"^\+PLUGIN:vSMR:GndTrailsDots.*", d)
+                                        exclude_gnd_trail_dots = re.match(r"^\+PLUGIN:vSMR:GndTrailsDots.*", d_file)
                                         if chk and not exclude_sector_info and not exclude_gnd_trail_dots:
                                             if not header:
                                                 logger.info(file)
@@ -236,7 +237,7 @@ class Downloader:
                                             elif add_setting.upper() == "A":
                                                 break_flag = True
                                                 break
-                                            
+
                             logger.info("Stashing changes in local repository...")
                             repo.git.stash()
                             logger.success(repo.git.rev_parse("stash@{0}"))
@@ -278,7 +279,7 @@ class Downloader:
                 return True
         logger.error(f"Folder {folder} was not found!")
         return False
-    
+
     def drop_stash(self) -> None:
         """Drop the stash once upgrade completed"""
 
@@ -294,9 +295,9 @@ class Downloader:
             stash_list = stash_list.split("\n")
             if stash_list:
                 # Work through the list in reverse as git will 'bump' everything down
-                for s in reversed(stash_list):
-                    repo.git.stash("drop", str(s).split(":")[0])
-                    logger.debug(f"{str(s).split(':')[0]} has been dropped")
+                for stash in reversed(stash_list):
+                    repo.git.stash("drop", str(stash).split(":", maxsplit=1)[0])
+                    logger.debug(f"{str(stash).split(':', maxsplit=1)[0]} has been dropped")
             else:
                 logger.info("No stash to delete")
                 return None
@@ -316,7 +317,7 @@ class CurrentInstallation:
 
         # Get the current AIRAC cycle
         airac = Airac()
-        self.airac = airac.currentTag()
+        self.airac = airac.current_tag()
 
         # Sector file base URL
         self.sector_url = "http://www.vatsim.uk/files/sector/esad/"
@@ -368,13 +369,13 @@ class CurrentInstallation:
 
             if realname or all_data:
                 return_user_data["realname"] = input("Enter your real name or CID: ")
-            
+
             if certificate or all_data:
                 return_user_data["certificate"] = input("Enter your certificate or CID: ")
-            
+
             if password or all_data:
                 return_user_data["password"] = getpass(prompt="Enter your password: ")
-            
+
             if rating or all_data:
                 return_user_data["rating"] = input("Enter your rating: ")
 
@@ -384,13 +385,14 @@ class CurrentInstallation:
                 print(title)
                 print("-"*30)
                 output = {}
+                number = 0
                 for number, item in enumerate(options, start=1):
                     print(f"{number}.\t{item}")
                     output[int(number)] = item
 
                 print(f"n.\tEnter new {data_type}")
                 logger.debug(f"{data_type} menu options are {output}")
-                
+
                 choice = input(f"Please select which {data_type} you wish to use in all profiles: ")
                 if re.match(r"[nN0-9]{1,}", choice):
                     if choice.upper() == "N":
@@ -446,13 +448,13 @@ class CurrentInstallation:
                     if file_name.endswith(".prf"):
                         file_path = os.path.join(root, file_name)
                         logger.debug(f"Found {file_path}")
-                        with open(file_path, 'r') as file:
+                        with open(file_path, "r", encoding="utf-8") as file:
                             for line in file:
                                 for key, pattern in patterns.items():
                                     match = re.match(pattern, line)
                                     if match:
                                         return_user_data[key].add(match.group(1))
-                                         
+
             # Process the collected data
             for key, values in return_user_data.items():
                 if key != "password" and key != "plugins":
@@ -481,7 +483,7 @@ class CurrentInstallation:
                         # Loop over the plugins and ask for confirmation for each one
                         for i in list(plugins):
                             print(i)
-                            response = input(f"Do you want to add this plugin? [Y|n] ")
+                            response = input("Do you want to add this plugin? [Y|n] ")
                             if response.upper() == "N":
                                 continue
                             else:
@@ -489,7 +491,7 @@ class CurrentInstallation:
                     else:
                         logger.info("No custom (non UKCP) plugins were detected")
                         plugin_out = ["No custom (non UKCP) plugins were detected"]
-                    
+
                     return_user_data["plugins"] = plugin_out
 
         # Check for "None" entries
@@ -507,7 +509,7 @@ class CurrentInstallation:
         print("This is a LOCAL operation and none of your data is transmitted away from your computer!")
         print(f"Real Name:\t\t{return_user_data['realname']}")
         print(f"Certificate:\t\t{return_user_data['certificate']}")
-        print(f"Password:\t\t[NOT DISPLAYED]")
+        print("Password:\t\t[NOT DISPLAYED]")
         print(f"Rating:\t\t\t{return_user_data['rating']}")
         for j, i in enumerate(plugin_out):
             if j == 0:
@@ -537,13 +539,13 @@ class CurrentInstallation:
                             if file_name.endswith(ext):
                                 file_path = os.path.join(root, file_name)
                                 logger.debug(f"Found {file_path}")
-                                with open(file_path, file_mode) as file:
+                                with open(file_path, file_mode, encoding="utf-8") as file:
                                     lines = file.readlines()
                                     file.seek(0)
                                     func(lines, file, file_path, *args, **kwargs)
                 return wrapper
             return decorator_func
-        
+
         def get_sector_file() -> str:
             """Get the sector file name"""
 
@@ -554,10 +556,10 @@ class CurrentInstallation:
                     if file_name.endswith(".sct"):
                         sector_file.append(os.path.join(root, file_name))
                         sector_fn.append(file_name)
-            
+
             if len(sector_file) == 1 and len(sector_fn) == 1:
                 logger.info(f"Sector file found at {sector_file[0]}")
-                
+
                 # Check the sector file matches the current AIRAC cycle
                 airac_format = str(self.airac.replace("/", "_"))
                 if airac_format not in sector_file[0]:
@@ -567,25 +569,25 @@ class CurrentInstallation:
                         # Download the latest file
                         url = f"{self.sector_url}UK_{airac_format}.7z"
                         logger.debug(f"Sector file url {url}")
-                        sector_7z = requests.get(url)
+                        sector_7z = requests.get(url, timeout=30)
 
                         # Write it to local file
                         file_path = f"local\\UK_{airac_format}.7z"
                         with open(file_path, "wb") as file:
                             file.write(sector_7z.content)
-                        
+
                         # Extract the contents of the archive
                         with py7zr.SevenZipFile(file_path, mode="r") as archive:
                             archive.extractall(path=f"{self.ukcp_location}\\Data\\Sector")
-                        
+
                         # Clean up artifacts
                         os.remove(file_path)
                         # Clean up old sector files
                         ext = ["ese", "rwy", "sct"]
                         logger.debug(f"Sector file name{sector_fn}")
                         for e in ext:
-                            os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.')[0]}.{e}")
-                        
+                            os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{e}")
+
                         # Return the newly downloaded sector file
                         return str(f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct")
                 return str(sector_file[0])
@@ -593,12 +595,12 @@ class CurrentInstallation:
                 logger.error(f"Sector file search found {len(sector_file)} files. You should only have one of these!")
                 logger.debug(sector_file)
                 raise ValueError(f"{len(sector_file)} sector files were found when there should only be one")
-        
+
         sct_file = get_sector_file()
         sct_file_split = sct_file.split("\\")
 
         @iter_files(".asr", "r+")
-        def asr_sector_file(lines, file, file_path):
+        def asr_sector_file(lines=None, file=None, file_path=None):
             """Updates all 'asr' files to include the latest sector file"""
 
             sector_file = f"SECTORFILE:{sct_file}"
@@ -610,14 +612,14 @@ class CurrentInstallation:
             for line in lines:
                 # Add the sector file path
                 content = re.sub(r"^SECTORFILE\:(.*)", sf_replace, line)
-                
+
                 # If no replacement is made then try the sector title
                 if content == line:
                     content = re.sub(r"^SECTORTITLE\:(.*)", sector_title, line)
-                
+
                 if content != line:
                     chk = True
-              
+
                 # Write the updated content back to the file
                 file.write(content)
             file.truncate()
@@ -625,24 +627,23 @@ class CurrentInstallation:
             # If no changes have been made, add the SECTORFILE and SECTORTITLE lines
             if not chk:
                 file.close()
-                with open(file_path, "a") as file_append:
+                with open(file_path, "a", encoding="utf-8") as file_append:
                     file_append.write(sector_file + "\n")
                     file_append.write(sector_title + "\n")
-        
+
         @iter_files(".prf", "r+")
-        def prf_files(lines, file, file_path):
+        def prf_files(lines=None, file=None, file_path=None):
             """Updates all 'prf' files to include the latest sector file"""
 
             sector_file = f"Settings\tsector\t{sct_file}"
 
             sf_replace = sector_file.replace("\\", "\\\\")
 
-            chk = False
             plugin_count = set()
             for line in lines:
                 # Add the sector file path
                 content = re.sub(r"^Settings\tsector\t(.*)", sf_replace, line)
-              
+
                 # Write the updated content back to the file
                 file.write(content)
 
@@ -657,7 +658,7 @@ class CurrentInstallation:
 
             # Append user settings to the file
             file.close()
-            with open(file_path, "a") as file_append:
+            with open(file_path, "a", encoding="utf-8") as file_append:
                 apply_settings = []
                 # Session settings
                 apply_settings.append(f"LastSession\trealname\t{settings_prf['realname']}")
@@ -688,9 +689,9 @@ class CurrentInstallation:
                 file_append.write("\n")
                 for setting in apply_settings:
                     file_append.write(setting + "\n")
-        
+
         @iter_files(".txt", "r+")
-        def txt_files(lines, file, file_path):
+        def txt_files(lines=None, file=None, file_path=None):
             """Updates txt (settings) files"""
 
             # Do this with **all** screen setting files
@@ -700,7 +701,7 @@ class CurrentInstallation:
                     content = re.sub(r"^m\_ShowTsVccsMiniControl\:[1|0]{1}", show_vccs, line)
                     file.write(content)
                 file.truncate()
-            
+
             # Do this with **all** *_APP_DL.txt setting files (Departure List)
             if re.match(r"^.*\_APP\_DL.txt", file_path):
                 set_squawk_ukcp = "m_Column:ASSR:5:1:60:9000:9022:1::UK Controller Plugin:UK Controller Plugin:0:0.0"
@@ -708,9 +709,9 @@ class CurrentInstallation:
                     content = re.sub(r"^m_Column:ASSR", set_squawk_ukcp, line)
                     file.write(content)
                 file.truncate()
-            
+
             # Add stored settings from earlier into txt files
-            with open("local/settings.csv", "r") as csv_in:
+            with open("local/settings.csv", "r", encoding="utf-8") as csv_in:
                 data_in = csv.DictReader(csv_in)
                 for row in data_in:
                     if row["filepath"].replace("/", "\\") in str(file_path):
@@ -738,8 +739,8 @@ class CurrentInstallation:
         prf_files()
         logger.info("Updating any other settings you have opted to carry over")
         txt_files()
-            
-                                
+
+
 class Euroscope:
     """
     Check the version of EuroScope currently installed
@@ -787,7 +788,6 @@ class Euroscope:
         version_dll.GetFileVersionInfoW(exe_path, None, size, buffer)
 
         # Query the file description
-        language = ctypes.c_void_p()
         description = ctypes.c_wchar_p()
         description_length = ctypes.c_uint()
 
@@ -797,7 +797,7 @@ class Euroscope:
         version_number = description.value
         logger.info(f"EuroScope version {version_number} has been found")
         return version_number
-    
+
     def compare(self) -> bool:
         """Compare the found version against the minimum required version"""
 
