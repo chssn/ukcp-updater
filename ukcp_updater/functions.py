@@ -325,6 +325,9 @@ class CurrentInstallation:
         # Sector file base URL
         self.sector_url = "http://www.vatsim.uk/files/sector/esad/"
 
+        # Set some vars to do with specific plugins
+        self.plugin_vfpc = False
+
     @staticmethod
     def location() -> str:
         """Find the current location of UKCP"""
@@ -484,13 +487,16 @@ class CurrentInstallation:
                         plugin_out = []
 
                         # Loop over the plugins and ask for confirmation for each one
-                        for i in list(plugins):
-                            print(i)
+                        for plugin in list(plugins):
+                            print(plugin)
                             response = input("Do you want to add this plugin? [Y|n] ")
                             if response.upper() == "N":
                                 continue
                             else:
-                                plugin_out.append(str(i))
+                                plugin_out.append(str(plugin))
+                                # If the VFPC plugin is going to be used then set the environmental variable
+                                if re.match(r".*VFPC\.dll", plugin):
+                                    self.plugin_vfpc = True
                     else:
                         logger.info("No custom (non UKCP) plugins were detected")
                         plugin_out = ["No custom (non UKCP) plugins were detected"]
@@ -720,8 +726,11 @@ class CurrentInstallation:
             # Do this with **all** *_APP_DL.txt setting files (Departure List)
             if re.match(r"^.*\_APP\_DL.txt", file_path):
                 set_squawk_ukcp = "m_Column:ASSR:5:1:60:9000:9022:1::UK Controller Plugin:UK Controller Plugin:0:0.0"
+                set_vfpc = "m_Column:VFPC:5:0:1:100:9004:1:VFPC (UK):VFPC (UK):UK Controller Plugin:0:0.0"
                 for line in lines:
                     content = re.sub(r"^m_Column:ASSR", set_squawk_ukcp, line)
+                    if content == line and self.plugin_vfpc:
+                        content = re.sub(r"^END", set_vfpc + "\nEND", line)
                     file.write(content)
                 file.truncate()
 
