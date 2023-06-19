@@ -1,5 +1,13 @@
 <!--next-version-placeholder-->
 
+## v0.6.3 (2023-06-19)
+
+### Fix
+
+* Corrected handling of vfpc plugin ([`bbe0c78`](https://github.com/chssn/ukcp-updater/commit/bbe0c78804b98e0d31dfef3c673846726768096d))
+* Not handling multiple sct files ([`cd95f6c`](https://github.com/chssn/ukcp-updater/commit/cd95f6cc78f5806267e0ac86728407d1350f1970))
+* Unicode decode error ([`7d180a6`](https://github.com/chssn/ukcp-updater/commit/7d180a6674a3eed80df4f12120678ca7377c9c97))
+
 ## v0.6.2 (2023-06-19)
 
 ### Fix
