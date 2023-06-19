@@ -552,52 +552,64 @@ class CurrentInstallation:
         def get_sector_file() -> str:
             """Get the sector file name"""
 
-            sector_file = []
-            sector_fn = []
-            for root, dirs, files in os.walk(self.ukcp_location):
-                for file_name in files:
-                    if file_name.endswith(".sct"):
-                        sector_file.append(os.path.join(root, file_name))
-                        sector_fn.append(file_name)
+            loop = True
+            while loop:
+                sector_file = []
+                sector_fn = []
+                for root, dirs, files in os.walk(self.ukcp_location):
+                    for file_name in files:
+                        if file_name.endswith(".sct"):
+                            sector_file.append(os.path.join(root, file_name))
+                            sector_fn.append(file_name)
 
-            if len(sector_file) == 1 and len(sector_fn) == 1:
-                logger.info(f"Sector file found at {sector_file[0]}")
+                if len(sector_file) == 0:
+                    sector_file.append("*")
+                    sector_fn.append("*")
+                if len(sector_file) == 1 and len(sector_fn) == 1:
+                    logger.info(f"Sector file found at {sector_file[0]}")
 
-                # Check the sector file matches the current AIRAC cycle
-                airac_format = str(self.airac.replace("/", "_"))
-                if airac_format not in sector_file[0]:
-                    logger.warning(f"Your sector file appears out of date with the current {self.airac} release!")
-                    dl_sector = input("Would you like to download the latest sector file? [Y|n] ")
-                    if str(dl_sector).upper() != "N":
-                        # Download the latest file
-                        url = f"{self.sector_url}UK_{airac_format}.7z"
-                        logger.debug(f"Sector file url {url}")
-                        sector_7z = requests.get(url, timeout=30)
+                    # Check the sector file matches the current AIRAC cycle
+                    airac_format = str(self.airac.replace("/", "_"))
+                    if airac_format not in sector_file[0]:
+                        logger.warning(f"Your sector file appears out of date with the current {self.airac} release!")
+                        dl_sector = input("Would you like to download the latest sector file? [Y|n] ")
+                        if str(dl_sector).upper() != "N":
+                            # Download the latest file
+                            url = f"{self.sector_url}UK_{airac_format}.7z"
+                            logger.debug(f"Sector file url {url}")
+                            sector_7z = requests.get(url, timeout=30)
 
-                        # Write it to local file
-                        file_path = f"local\\UK_{airac_format}.7z"
-                        with open(file_path, "wb") as file:
-                            file.write(sector_7z.content)
+                            # Write it to local file
+                            file_path = f"local\\UK_{airac_format}.7z"
+                            with open(file_path, "wb") as file:
+                                file.write(sector_7z.content)
 
-                        # Extract the contents of the archive
-                        with py7zr.SevenZipFile(file_path, mode="r") as archive:
-                            archive.extractall(path=f"{self.ukcp_location}\\Data\\Sector")
+                            # Extract the contents of the archive
+                            with py7zr.SevenZipFile(file_path, mode="r") as archive:
+                                archive.extractall(path=f"{self.ukcp_location}\\Data\\Sector")
 
-                        # Clean up artifacts
-                        os.remove(file_path)
-                        # Clean up old sector files
+                            # Clean up artifacts
+                            os.remove(file_path)
+                            # Clean up old sector files
+                            ext = ["ese", "rwy", "sct"]
+                            logger.debug(f"Sector file name{sector_fn}")
+                            for i_ext in ext:
+                                os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{i_ext}")
+
+                            # Return the newly downloaded sector file
+                            loop = False
+                            return str(f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct")
+                    loop = False
+                    return str(sector_file[0])
+                else:
+                    logger.warning(f"Sector file search found {len(sector_file)} files. You should only have one of these!")
+                    logger.debug(sector_file)
+                    if len(sector_file) > 1:
+                        # Delete all sector file data and re-download
                         ext = ["ese", "rwy", "sct"]
                         logger.debug(f"Sector file name{sector_fn}")
                         for i_ext in ext:
                             os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{i_ext}")
-
-                        # Return the newly downloaded sector file
-                        return str(f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct")
-                return str(sector_file[0])
-            else:
-                logger.error(f"Sector file search found {len(sector_file)} files. You should only have one of these!")
-                logger.debug(sector_file)
-                raise ValueError(f"{len(sector_file)} sector files were found when there should only be one")
 
         sct_file = get_sector_file()
         sct_file_split = sct_file.split("\\")
