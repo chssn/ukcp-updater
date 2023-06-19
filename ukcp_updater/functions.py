@@ -771,7 +771,7 @@ class CurrentInstallation:
                     for line in lines:
                         content = re.sub(r"^END", set_cdm[0], line)
                         file.write(content)
-                    for count, config in enumerate(set_cdm, start=1):
+                    for count, config in enumerate(set_cdm[1:], start=1):
                         file.write(config + "\n")
                     file.write("END\n")
 
