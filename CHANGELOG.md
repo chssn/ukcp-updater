@@ -1,5 +1,11 @@
 <!--next-version-placeholder-->
 
+## v0.7.0 (2023-06-19)
+
+### Feature
+
+* Added support for CDM plugin ([`130bf73`](https://github.com/chssn/ukcp-updater/commit/130bf73a53b535388499dd3a37dfece8de74253a))
+
 ## v0.6.3 (2023-06-19)
 
 ### Fix
