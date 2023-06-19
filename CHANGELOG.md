@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.7.1 (2023-06-19)
+### Fix
+* Cdm plugin double eobt entry ([`50ff77d`](https://github.com/chssn/ukcp-updater/commit/50ff77d09def93b46a5c57a420e9e2027a5edc4f))
+
 ## v0.7.0 (2023-06-19)
 
 ### Feature
