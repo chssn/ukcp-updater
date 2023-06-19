@@ -1,5 +1,11 @@
 <!--next-version-placeholder-->
 
+## v0.6.2 (2023-06-19)
+
+### Fix
+
+* Euroscope version check not happening ([`11674f0`](https://github.com/chssn/ukcp-updater/commit/11674f083be6335299623536d4022be10cfd7eaf))
+
 ## v0.6.1 (2023-06-18)
 
 ### Fix
