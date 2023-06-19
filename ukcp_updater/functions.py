@@ -148,18 +148,21 @@ class Downloader:
     def check_requirements(self) -> bool:
         """Checks to see if the basic requirements are satisfied"""
 
-        # Test if Git is installed
-        if not self.is_git_installed():
-            logger.error("Git is not installed")
-            print("For this tool to work properly, the 'git' package is required.")
-            print("This tool can automatically download the 'git' package from:")
-            print("\thttps://git-scm.com/download/win")
-            consent = input("Are you happy for this tool to install 'git'? [Y|n] ")
-            if consent.upper() == "Y" or consent is None:
-                if self.install_git():
-                    logger.success("Git has been installed")
-                    return True
-            return False
+        # Test if EuroScope is installed
+        es_check = Euroscope()
+        if es_check.compare():
+            # Test if Git is installed
+            if not self.is_git_installed():
+                logger.error("Git is not installed")
+                print("For this tool to work properly, the 'git' package is required.")
+                print("This tool can automatically download the 'git' package from:")
+                print("\thttps://git-scm.com/download/win")
+                consent = input("Are you happy for this tool to install 'git'? [Y|n] ")
+                if consent.upper() == "Y" or consent is None:
+                    if self.install_git():
+                        logger.success("Git has been installed")
+                        return True
+                return False
         return True
 
     def clone(self) -> bool:
@@ -756,7 +759,7 @@ class Euroscope:
 
         # This is the default install location for EuroScope
         default_path = r"C:\Program Files (x86)\EuroScope\EuroScope.exe"
-        logger.info(f"Testing to see if {default_path} is valid...")
+        logger.debug(f"Testing to see if {default_path} is valid...")
 
         if os.path.exists(default_path):
             logger.success("EuroScope is installed in the default location")
@@ -795,7 +798,7 @@ class Euroscope:
 
         # Print the description
         version_number = description.value
-        logger.info(f"EuroScope version {version_number} has been found")
+        logger.debug(f"EuroScope version {version_number} has been found")
         return version_number
 
     def compare(self) -> bool:
