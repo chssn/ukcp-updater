@@ -524,7 +524,7 @@ class CurrentInstallation:
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_device']}")
         print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_device']}")
         input("Press ENTER to continue...")
-        
+
         return return_user_data
 
     def apply_settings(self, settings_prf:dict, settings_asr:dict) -> bool:
