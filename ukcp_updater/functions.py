@@ -542,7 +542,7 @@ class CurrentInstallation:
                             if file_name.endswith(ext):
                                 file_path = os.path.join(root, file_name)
                                 logger.debug(f"Found {file_path}")
-                                with open(file_path, file_mode, encoding="utf-8") as file:
+                                with open(file_path, file_mode) as file:
                                     lines = file.readlines()
                                     file.seek(0)
                                     func(lines, file, file_path, *args, **kwargs)
