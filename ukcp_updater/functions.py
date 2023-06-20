@@ -350,6 +350,30 @@ class CurrentInstallation:
             logger.info(f"User provided {install_path} for UK Controller Pack location")
             return install_path
 
+    @staticmethod
+    def manual_entry(return_user_data:dict, realname:bool=False, certificate:bool=False, password:bool=False, rating:bool=False, all_data:bool=True) -> dict:
+        """Allow manual entry of user data"""
+
+        if realname or all_data:
+            return_user_data["realname"] = input("Enter your real name or CID: ")
+
+        if certificate or all_data:
+            data_cid = "None"
+            while not re.match(r"[\d]{6,8}", data_cid):
+                data_cid = input("Enter your certificate or CID: ")
+            return_user_data["certificate"] = data_cid
+
+        if password or all_data:
+            return_user_data["password"] = getpass(prompt="Enter your password: ")
+
+        if rating or all_data:
+            data_rating = "None"
+            while not re.match(r"[\d]{1}", data_rating):
+                data_rating = input("Enter your rating: ")
+            return_user_data["rating"] = data_rating
+
+        return return_user_data
+
     def user_settings(self) -> dict:
         """Parse current *.prf files for custom settings"""
 
@@ -370,21 +394,6 @@ class CurrentInstallation:
             "vccs_playback_mode": None,
             "vccs_playback_device": None,
         })
-
-        def manual_entry(realname:bool=False, certificate:bool=False, password:bool=False, rating:bool=False, all_data:bool=True) -> None:
-            """Allow manual entry of user data"""
-
-            if realname or all_data:
-                return_user_data["realname"] = input("Enter your real name or CID: ")
-
-            if certificate or all_data:
-                return_user_data["certificate"] = input("Enter your certificate or CID: ")
-
-            if password or all_data:
-                return_user_data["password"] = getpass(prompt="Enter your password: ")
-
-            if rating or all_data:
-                return_user_data["rating"] = input("Enter your rating: ")
 
         def menu_option(title:str, data_type:str, options:list) -> str:
             """Menu to select one option out of many!"""
@@ -413,7 +422,7 @@ class CurrentInstallation:
         consent = input("Do you want us to search your existing files for any custom settings? [Y|n] ")
         if consent.upper() == "N":
             logger.warning("User consent not given for file search")
-            manual_entry(all_data=True)
+            return_user_data = self.manual_entry(return_user_data, all_data=True)
         else:
             logger.success("User consent given for file search")
 
@@ -511,13 +520,13 @@ class CurrentInstallation:
 
         # Check for "None" entries
         if return_user_data["realname"] is None:
-            manual_entry(realname=True)
+            return_user_data = self.manual_entry(return_user_data, realname=True)
         if return_user_data["certificate"] is None:
-            manual_entry(certificate=True)
+            return_user_data = self.manual_entry(return_user_data, certificate=True)
         if return_user_data["password"] is None:
-            manual_entry(password=True)
+            return_user_data = self.manual_entry(return_user_data, password=True)
         if return_user_data["rating"] is None:
-            manual_entry(rating=True)
+            return_user_data = self.manual_entry(return_user_data, rating=True)
 
         # User information
         print("The following data will be appended to all profiles in the UK Controller Pack")
