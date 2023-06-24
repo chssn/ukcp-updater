@@ -12,11 +12,11 @@ import datetime
 import os
 import re
 import subprocess
-from packaging.version import Version
 from getpass import getpass
 from math import floor
 from tkinter import Tk
 from tkinter import filedialog
+from packaging.version import Version
 
 # Third Party Libraries
 import git
