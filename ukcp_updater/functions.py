@@ -159,9 +159,11 @@ class Downloader:
                 print("\thttps://git-scm.com/download/win")
                 consent = input("Are you happy for this tool to install 'git'? [Y|n] ")
                 if consent.upper() == "Y" or consent is None:
+                    logger.success("User has constented to the 'git' package being installed")
                     if self.install_git():
                         logger.success("Git has been installed")
                         return True
+                logger.error("User has not consented to the 'git' package being installed")
                 return False
         return True
 
