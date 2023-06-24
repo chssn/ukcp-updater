@@ -12,7 +12,7 @@ import datetime
 import os
 import re
 import subprocess
-from distutils.version import LooseVersion
+from packaging.version import Version
 from getpass import getpass
 from math import floor
 from tkinter import Tk
@@ -879,7 +879,7 @@ class Euroscope:
         minimum_version = self.minimum_version
 
         # Carry out the comparison
-        if LooseVersion(installed_version) > LooseVersion(minimum_version):
+        if Version(installed_version) > Version(minimum_version):
             logger.success(f"Installed version of EuroScope (v{installed_version}) is compatible with this script")
             return True
         raise ValueError(f"EuroScope version (v{installed_version}) is incompatible with this application. Download the latest version from https://www.euroscope.hu/wp/installation/")
