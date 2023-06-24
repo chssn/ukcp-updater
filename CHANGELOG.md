@@ -1,5 +1,11 @@
 <!--next-version-placeholder-->
 
+## v0.7.2 (2023-06-24)
+
+### Fix
+
+* No data validation ([`b695fc2`](https://github.com/chssn/ukcp-updater/commit/b695fc29ebc448b6f266a745dc7c0bba316b8bd1))
+
 ## v0.7.1 (2023-06-19)
 ### Fix
 * Cdm plugin double eobt entry ([`50ff77d`](https://github.com/chssn/ukcp-updater/commit/50ff77d09def93b46a5c57a420e9e2027a5edc4f))
