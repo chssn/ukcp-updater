@@ -49,7 +49,7 @@ class Airac:
         diff_cycles = (input_date - self.base_date) / datetime.timedelta(days=1)
         # Round that number down to the nearest whole integer
         number_of_cycles = floor(diff_cycles / self.cycle_days)
-        logger.debug(f"{number_of_cycles} AIRAC cycles since {input_date}")
+        logger.debug(f"{number_of_cycles} AIRAC cycles since {self.base_date}")
 
         return number_of_cycles
 
