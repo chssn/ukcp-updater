@@ -1,5 +1,11 @@
 <!--next-version-placeholder-->
 
+## v0.7.3 (2023-08-14)
+
+### Fix
+
+* Git.exc.GitCommandError ([`c14d8c9`](https://github.com/chssn/ukcp-updater/commit/c14d8c9706a258f7ecab071c6a6ca1cc88b022ae))
+
 ## v0.7.2 (2023-06-24)
 
 ### Fix
