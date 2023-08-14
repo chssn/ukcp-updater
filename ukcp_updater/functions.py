@@ -256,6 +256,7 @@ class Downloader:
             if str(repo.active_branch) == str(self.branch):
                 # Pull the latest commit
                 logger.debug(f"Pull {self.repo_url}")
+                repo.git.stash("save", f"stashed files for {self.airac}")
                 repo.git.pull()
 
                 # Checkout the latest tag
@@ -395,6 +396,7 @@ class CurrentInstallation:
             "vccs_capture_device": None,
             "vccs_playback_mode": None,
             "vccs_playback_device": None,
+            "hoppies_cpdlc_password": None,
         })
 
         def menu_option(title:str, data_type:str, options:list) -> str:
@@ -442,6 +444,7 @@ class CurrentInstallation:
                 "vccs_playback_device": r"TeamSpeakVccs\tPlaybackDevice\t(.*)",
                 "vccs_capture_mode": r"TeamSpeakVccs\tCaptureMode\t(.*)",
                 "vccs_capture_device": r"TeamSpeakVccs\tCaptureDevice\t(.*)",
+                "hoppies_cpdlc_password": r"vSMR\:cpdlc\_password\:(.*)",
             }
 
             # Init the return_user_data keys
@@ -458,6 +461,7 @@ class CurrentInstallation:
                 "vccs_capture_device": set(),
                 "vccs_playback_mode": set(),
                 "vccs_playback_device": set(),
+                "hoppies_cpdlc_password": set(),
             })
 
             # Iterate over files in the directory and search within each file
@@ -549,6 +553,7 @@ class CurrentInstallation:
         print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_mode']}")
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_device']}")
         print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_device']}")
+        print("Hoppies CPDLC Password:\t[NOT DISPLAYED]")
         input("Press ENTER to continue...")
 
         return return_user_data
