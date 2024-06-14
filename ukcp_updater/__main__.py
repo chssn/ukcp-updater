@@ -13,8 +13,7 @@ import sys
 from loguru import logger
 
 # Local Libraries
-import ukcp_updater
-from ukcp_updater import functions
+from ukcp_updater import functions, __version__
 
 @logger.catch
 def main():
@@ -27,7 +26,7 @@ def main():
     # Intro
     os.system("cls")
     print("-" * 60)
-    print(f"VATSIM UK Controller Pack Updater v{ukcp_updater.__version__}")
+    print(f"VATSIM UK Controller Pack Updater v{__version__}")
     print("https://github.com/chssn/ukcp-updater")
     print("-" * 60)
 
