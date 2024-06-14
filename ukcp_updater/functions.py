@@ -8,76 +8,23 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import csv
 import ctypes
-import datetime
-import math
 import os
 import re
 import subprocess
 from getpass import getpass
 from tkinter import Tk
 from tkinter import filedialog
+from typing import List
 from packaging.version import Version
 
 # Third Party Libraries
 import git
 import py7zr
-import requests
+import requests # type: ignore
 from loguru import logger
 
 # Local Libraries
-
-class Airac:
-    """
-    Class for general functions relating to AIRAC
-    """
-
-    def __init__(self):
-        # First AIRAC date following the last cycle length modification
-        self.start_date = "2019-01-02"
-        self.base_date = datetime.date.fromisoformat(self.start_date)
-        # Length of one AIRAC cycle
-        self.cycle_days = 28
-
-    def _initialise(self, date_in:str="") -> int:
-        """Calculate the number of AIRAC cycles between any given date and the start date"""
-
-        if date_in != "":
-            input_date = datetime.date.fromisoformat(str(date_in))
-        else:
-            input_date = datetime.date.today()
-
-        # How many AIRAC cycles have occured since the start date
-        diff_cycles = (input_date - self.base_date) / datetime.timedelta(days=1)
-        logger.debug(f"{diff_cycles} days have passed since the start date ({self.start_date})")
-        # Round that number down to the nearest whole integer
-        number_of_cycles = math.floor(diff_cycles / self.cycle_days)
-        logger.debug(
-            f"{diff_cycles} divided by {self.cycle_days} (AIRAC cycle length) and rounded down is "
-            f"{number_of_cycles} AIRAC cycles")
-
-        return number_of_cycles
-
-    def cycle(self, next_cycle:bool=False, date_in:str="") -> datetime.date:
-        """Return the date of the current AIRAC cycle"""
-
-        number_of_cycles = self._initialise(date_in)
-        if next_cycle:
-            number_of_days = (number_of_cycles + 1) * self.cycle_days + 1
-        else:
-            number_of_days = number_of_cycles * self.cycle_days + 1
-        select_cycle = self.base_date + datetime.timedelta(days=number_of_days)
-        logger.success(f"The selected AIRAC cycle date is: {select_cycle}")
-
-        return select_cycle
-
-    def current_tag(self) -> str:
-        """Returns the current tag for use with git"""
-        current_cycle = self.cycle()
-        # Split the current_cycle by '-' and return in format yyyy/mm
-        split_cc = str(current_cycle).split("-")
-        logger.debug(f"Current tag should be {split_cc[0]}/{split_cc[1]}")
-
-        return f"{split_cc[0]}/{split_cc[1]}"
+from ukcp_updater import airac
 
 
 class Downloader:
@@ -90,8 +37,8 @@ class Downloader:
         self.repo_url = "https://github.com/VATSIM-UK/uk-controller-pack.git"
 
         # Get the current AIRAC
-        airac = Airac()
-        self.airac = airac.current_tag()
+        airac_init = airac.Airac()
+        self.airac = airac_init.current_tag()
 
         # Where should the app download to?
         # Default is the EuroScope folder in APPDATA
@@ -222,10 +169,11 @@ class Downloader:
                         for file in changed_files:
                             if break_flag:
                                 break
-                            # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
+                            # Anything except .prf which is dealt with elsewhere
+                            # along with sct, rwy and ese files
                             string = str(file).rsplit(".", maxsplit=1)[-1]
                             if string not in ["prf", "sct", "rwy", "ese"] and os.path.exists(file):
-                                logger.trace(file)
+                                logger.debug(file)
                                 file_diff = repo.git.diff(tags[-1], file)
                                 header = False
                                 for d_file in str(file_diff).split("\n"):
@@ -235,7 +183,7 @@ class Downloader:
                                     # - it's a given these will change
                                     exclude_sector_info = re.match(
                                         r"^\+SECTOR[FILE|TITLE].*", d_file)
-                                    # Exclude the last line as git will match it as a change if 
+                                    # Exclude the last line as git will match it as a change if
                                     # anything is appended below
                                     exclude_gnd_trail_dots = re.match(
                                         r"^\+PLUGIN:vSMR:GndTrailsDots.*", d_file)
@@ -349,9 +297,9 @@ class CurrentInstallation:
     def __init__(self) -> None:
         self.ukcp_location = self.location()
 
-        # Get the current AIRAC cycle
-        airac = Airac()
-        self.airac = airac.current_tag()
+        # Get the current AIRAC
+        airac_init = airac.Airac()
+        self.airac = airac_init.current_tag()
 
         # Sector file base URL
         self.sector_url = "http://www.vatsim.uk/files/sector/esad/"
@@ -415,8 +363,8 @@ class CurrentInstallation:
     def user_settings(self) -> dict:
         """Parse current *.prf files for custom settings"""
 
-        plugin_out = []
-        return_user_data = {}
+        plugin_out:List[str] = []
+        return_user_data:dict = {}
         # Init the return_user_data keys
         return_user_data.update({
             "realname": None,
@@ -551,12 +499,12 @@ class CurrentInstallation:
                                 continue
                             else:
                                 plugin_out.append(str(plugin))
-                                # If the VFPC plugin is going to be used then 
+                                # If the VFPC plugin is going to be used then
                                 # set the environmental variable
                                 if re.match(r".*VFPC\.dll", plugin):
                                     logger.debug("VFPC.dll specific functions enabled")
                                     self.plugin_vfpc = True
-                                # If the CDM plugin is going to be used then 
+                                # If the CDM plugin is going to be used then
                                 # set the environmental variable
                                 if re.match(r".*CDM\.dll", plugin):
                                     logger.debug("CDM.dll specific functions enabled")
@@ -704,27 +652,28 @@ class CurrentInstallation:
             sf_replace = sector_file.replace("\\", "\\\\")
 
             chk = False
-            for line in lines:
-                # Add the sector file path
-                content = re.sub(r"^SECTORFILE\:(.*)", sf_replace, line)
+            if lines and file:
+                for line in lines:
+                    # Add the sector file path
+                    content = re.sub(r"^SECTORFILE\:(.*)", sf_replace, line)
 
-                # If no replacement is made then try the sector title
-                if content == line:
-                    content = re.sub(r"^SECTORTITLE\:(.*)", sector_title, line)
+                    # If no replacement is made then try the sector title
+                    if content == line:
+                        content = re.sub(r"^SECTORTITLE\:(.*)", sector_title, line)
 
-                if content != line:
-                    chk = True
+                    if content != line:
+                        chk = True
 
-                # Write the updated content back to the file
-                file.write(content)
-            file.truncate()
+                    # Write the updated content back to the file
+                    file.write(content)
+                file.truncate()
 
-            # If no changes have been made, add the SECTORFILE and SECTORTITLE lines
-            if not chk:
-                file.close()
-                with open(file_path, "a", encoding="utf-8") as file_append:
-                    file_append.write(sector_file + "\n")
-                    file_append.write(sector_title + "\n")
+                # If no changes have been made, add the SECTORFILE and SECTORTITLE lines
+                if not chk:
+                    file.close()
+                    with open(file_path, "a", encoding="utf-8") as file_append:
+                        file_append.write(sector_file + "\n")
+                        file_append.write(sector_title + "\n")
 
         @iter_files(".prf", "r+")
         def prf_files(lines=None, file=None, file_path=None):
