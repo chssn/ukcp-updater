@@ -128,11 +128,14 @@ class Downloader:
     @staticmethod
     def install_git() -> bool:
         """Trys to install the git package"""
-        logger.info("Lauching PowerShell to run the following command: winget install --id Git.Git -e --source winget")
-        logger.info("You can find out more about winget here - https://learn.microsoft.com/en-us/windows/package-manager/winget/")
+        logger.info("Lauching PowerShell to run the following command: "
+                    "winget install --id Git.Git -e --source winget")
+        logger.info("You can find out more about winget here - "
+                    "https://learn.microsoft.com/en-us/windows/package-manager/winget/")
 
         # Launch the shell
-        process = subprocess.Popen(["powershell.exe", "-Command", "winget install --id Git.Git -e --source winget"])
+        process = subprocess.Popen(
+            ["powershell.exe", "-Command", "winget install --id Git.Git -e --source winget"])
 
         # Wait for the process to complete and get the exit status
         process.communicate()
@@ -169,7 +172,10 @@ class Downloader:
         return True
 
     def clone(self) -> bool:
-        """Perform the clone operation. Returns TRUE if the folder already exists and FALSE if not"""
+        """
+        Perform the clone operation. Returns TRUE if the folder already exists and FALSE if not
+        """
+
         folder = f"{self.git_path}"
         if os.path.exists(folder):
             logger.success(f"The repo has already been cloned to {folder}")
@@ -200,7 +206,8 @@ class Downloader:
             try:
                 repo.git.checkout(self.branch)
             except git.exc.GitCommandError:
-                logger.warning(f"'git checkout {self.branch}' failed due to local changes not being saved... This is quite normal!")
+                logger.warning(f"'git checkout {self.branch}' failed due to local changes "
+                               "not being saved... This is quite normal!")
 
                 # Get the changed files
                 changed_files = [item.a_path for item in repo.index.diff(None)]
@@ -209,29 +216,39 @@ class Downloader:
                         f_set.write("filepath,data\n")
                         # Get the latest tag (local)
                         tags = self.get_remote_tags()
-                        logger.info(f"Comparing local changes against tag {tags[-1]} - this will take a minute or so to do...")
+                        logger.info(f"Comparing local changes against tag {tags[-1]} - "
+                                    "this will take a minute or so to do...")
                         break_flag = False
                         for file in changed_files:
                             if break_flag:
                                 break
                             # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
-                            if str(file).rsplit(".", maxsplit=1)[-1] not in ["prf", "sct", "rwy", "ese"] and os.path.exists(file):
+                            string = str(file).rsplit(".", maxsplit=1)[-1]
+                            if string not in ["prf", "sct", "rwy", "ese"] and os.path.exists(file):
                                 logger.trace(file)
                                 file_diff = repo.git.diff(tags[-1], file)
                                 header = False
                                 for d_file in str(file_diff).split("\n"):
                                     # Only look for additions not deletions
                                     chk = re.match(r"^[\+]([A-Za-z]+.*)", d_file)
-                                    # Exclude any line starting with SECTORFILE or SECTORTITLE - it's a given these will change
-                                    exclude_sector_info = re.match(r"^\+SECTOR[FILE|TITLE].*", d_file)
-                                    # Exclude the last line as git will match it as a change if anything is appended below
-                                    exclude_gnd_trail_dots = re.match(r"^\+PLUGIN:vSMR:GndTrailsDots.*", d_file)
-                                    if chk and not exclude_sector_info and not exclude_gnd_trail_dots:
+                                    # Exclude any line starting with SECTORFILE or SECTORTITLE
+                                    # - it's a given these will change
+                                    exclude_sector_info = re.match(
+                                        r"^\+SECTOR[FILE|TITLE].*", d_file)
+                                    # Exclude the last line as git will match it as a change if 
+                                    # anything is appended below
+                                    exclude_gnd_trail_dots = re.match(
+                                        r"^\+PLUGIN:vSMR:GndTrailsDots.*", d_file)
+                                    if (chk and
+                                        not exclude_sector_info and
+                                        not exclude_gnd_trail_dots):
                                         if not header:
                                             logger.info(file)
                                             header = True
                                         logger.success(f"Change identified: {chk.group(1)}")
-                                        add_setting = input("Do you want to retain this setting? [y]es | [N]o | [s]kip file | skip [a]ll: ")
+                                        add_setting = input(
+                                            "Do you want to retain this setting? [y]es | [N]o "
+                                            "| [s]kip file | skip [a]ll: ")
                                         if add_setting.upper() == "Y":
                                             f_set.write(f"{file},{chk.group(1)}\n")
                                         elif add_setting.upper() == "S":
@@ -274,7 +291,8 @@ class Downloader:
                                 break
 
                         if tag:
-                            logger.info(f"Detached HEAD is associated with the following tag: {tag}")
+                            logger.info(
+                                f"Detached HEAD is associated with the following tag: {tag}")
                         else:
                             logger.warning("Detached HEAD is not associated with any tags.")
                     else:
@@ -352,7 +370,8 @@ class CurrentInstallation:
         logger.debug(f"Testing to see if {default_path} is valid...")
 
         if os.path.exists(default_path):
-            logger.debug(f"UK Controller Pack data is installed in the default location {default_path}")
+            logger.debug(
+                f"UK Controller Pack data is installed in the default location {default_path}")
             return default_path
         else:
             # This first bit just hides the tkinter box so only file explorer is displayed
@@ -364,7 +383,13 @@ class CurrentInstallation:
             return install_path
 
     @staticmethod
-    def manual_entry(return_user_data:dict, realname:bool=False, certificate:bool=False, password:bool=False, rating:bool=False, all_data:bool=True) -> dict:
+    def manual_entry(
+        return_user_data:dict,
+        realname:bool=False,
+        certificate:bool=False,
+        password:bool=False,
+        rating:bool=False,
+        all_data:bool=True) -> dict:
         """Allow manual entry of user data"""
 
         if realname or all_data:
@@ -430,10 +455,12 @@ class CurrentInstallation:
                     elif int(choice) >= 1 and int(choice) <= int(number):
                         return output[int(choice)]
                 else:
-                    logger.error(f"Invalid input detected, you entered {choice}. Please enter the number corresponding to the option you wish to use")
+                    logger.error(f"Invalid input detected, you entered {choice}. Please enter "
+                                 "the number corresponding to the option you wish to use")
 
         # Ask the user if they consent to file search for custom settings
-        consent = input("Do you want us to search your existing files for any custom settings? [Y|n] ")
+        consent = input(
+            "Do you want us to search your existing files for any custom settings? [Y|n] ")
         if consent.upper() == "N":
             logger.warning("User consent not given for file search")
             return_user_data = self.manual_entry(return_user_data, all_data=True)
@@ -492,7 +519,8 @@ class CurrentInstallation:
                 if key != "password" and key != "plugins":
                     if len(values) > 1:
                         logger.warning(f"More than one setting for {key} has been found!")
-                        menu_select = menu_option(f"Select the {key} you wish to use below", key, list(values))
+                        menu_select = menu_option(
+                            f"Select the {key} you wish to use below", key, list(values))
                         return_user_data[key] = menu_select
                     else:
                         return_user_data[key] = next(iter(values), None)
@@ -500,8 +528,11 @@ class CurrentInstallation:
                     # Passwords handled separately
                     if len(values) > 1:
                         logger.warning("More than one setting for your password has been found!")
-                        logger.info(f"We found {len(values)} different passwords however won't display them!")
-                        logger.info("Please enter your password below. Note that no characters or *'s will be displayed!")
+                        logger.info(
+                            f"We found {len(values)} different passwords "
+                            "however won't display them!")
+                        logger.info("Please enter your password below. Note that no "
+                                    "characters or *'s will be displayed!")
                         return_user_data["password"] = getpass()
                     elif len(values) == 1:
                         return_user_data["password"] = list(values)[0]
@@ -520,11 +551,13 @@ class CurrentInstallation:
                                 continue
                             else:
                                 plugin_out.append(str(plugin))
-                                # If the VFPC plugin is going to be used then set the environmental variable
+                                # If the VFPC plugin is going to be used then 
+                                # set the environmental variable
                                 if re.match(r".*VFPC\.dll", plugin):
                                     logger.debug("VFPC.dll specific functions enabled")
                                     self.plugin_vfpc = True
-                                # If the CDM plugin is going to be used then set the environmental variable
+                                # If the CDM plugin is going to be used then 
+                                # set the environmental variable
                                 if re.match(r".*CDM\.dll", plugin):
                                     logger.debug("CDM.dll specific functions enabled")
                                     self.plugin_cdm = True
@@ -546,7 +579,8 @@ class CurrentInstallation:
 
         # User information
         print("The following data will be appended to all profiles in the UK Controller Pack")
-        print("This is a LOCAL operation and none of your data is transmitted away from your computer!")
+        print("This is a LOCAL operation and none of your data is transmitted "
+              "away from your computer!")
         print(f"Real Name:\t\t{return_user_data['realname']}")
         print(f"Certificate:\t\t{return_user_data['certificate']}")
         print("Password:\t\t[NOT DISPLAYED]")
@@ -556,9 +590,12 @@ class CurrentInstallation:
                 print(f"Plugins:\t\t{i}")
             else:
                 print(f"\t\t\t{i}")
-        print(f"VCCS Nickname:\t\t{return_user_data['certificate']}\t\tnote: this has just been copied from your certificate")
-        print(f"VCCS G2A PTT:\t\t{return_user_data['vccs_ptt_g2a']}\t\tnote: this is a scancode representation of a phyiscal key")
-        print(f"VCCS G2G PTT:\t\t{return_user_data['vccs_ptt_g2g']}\t\tnote: this is a scancode representation of a phyiscal key")
+        print(f"VCCS Nickname:\t\t{return_user_data['certificate']}\t\tnote: this has just been "
+              "copied from your certificate")
+        print(f"VCCS G2A PTT:\t\t{return_user_data['vccs_ptt_g2a']}\t\tnote: this is a "
+              "scancode representation of a phyiscal key")
+        print(f"VCCS G2G PTT:\t\t{return_user_data['vccs_ptt_g2g']}\t\tnote: this is a "
+              "scancode representation of a phyiscal key")
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_mode']}")
         print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_mode']}")
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_device']}")
@@ -568,7 +605,7 @@ class CurrentInstallation:
 
         return return_user_data
 
-    def apply_settings(self, settings_prf:dict, settings_asr:dict) -> bool:
+    def apply_settings(self, settings_prf:dict, settings_asr:dict):
         """Applies settings to relevant files"""
 
         def iter_files(ext:str, file_mode:str):
@@ -587,7 +624,7 @@ class CurrentInstallation:
                 return wrapper
             return decorator_func
 
-        def get_sector_file() -> str:
+        def get_sector_file():
             """Get the sector file name"""
 
             loop = True
@@ -609,8 +646,10 @@ class CurrentInstallation:
                     # Check the sector file matches the current AIRAC cycle
                     airac_format = str(self.airac.replace("/", "_"))
                     if airac_format not in sector_file[0]:
-                        logger.warning(f"Your sector file appears out of date with the current {self.airac} release!")
-                        dl_sector = input("Would you like to download the latest sector file? [Y|n] ")
+                        logger.warning("Your sector file appears out of date with the "
+                                       f"current {self.airac} release!")
+                        dl_sector = input(
+                            "Would you like to download the latest sector file? [Y|n] ")
                         if str(dl_sector).upper() != "N":
                             # Download the latest file
                             url = f"{self.sector_url}UK_{airac_format}.7z"
@@ -632,7 +671,8 @@ class CurrentInstallation:
                             ext = ["ese", "rwy", "sct"]
                             logger.debug(f"Sector file name{sector_fn}")
                             for i_ext in ext:
-                                os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{i_ext}")
+                                os.remove(f"{self.ukcp_location}\\Data\\Sector\\"
+                                          f"{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{i_ext}")
 
                             # Return the newly downloaded sector file
                             loop = False
@@ -640,14 +680,16 @@ class CurrentInstallation:
                     loop = False
                     return str(sector_file[0])
                 else:
-                    logger.warning(f"Sector file search found {len(sector_file)} files. You should only have one of these!")
+                    logger.warning(f"Sector file search found {len(sector_file)} files. "
+                                   "You should only have one of these!")
                     logger.debug(sector_file)
                     if len(sector_file) > 1:
                         # Delete all sector file data and re-download
                         ext = ["ese", "rwy", "sct"]
                         logger.debug(f"Sector file name{sector_fn}")
                         for i_ext in ext:
-                            os.remove(f"{self.ukcp_location}\\Data\\Sector\\{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{i_ext}")
+                            os.remove(f"{self.ukcp_location}\\Data\\Sector\\"
+                                      f"{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{i_ext}")
 
         sct_file = get_sector_file()
         sct_file_split = sct_file.split("\\")
@@ -730,14 +772,23 @@ class CurrentInstallation:
                 apply_settings.append("TeamSpeakVccs\tTsVccsMiniControlX\t1581")
                 apply_settings.append("TeamSpeakVccs\tTsVccsMiniControlY\t198")
                 if settings_prf['vccs_ptt_g2a'] is not None:
-                    apply_settings.append(f"TeamSpeakVccs\tTs3G2APtt\t{settings_prf['vccs_ptt_g2a']}")
+                    apply_settings.append(
+                        f"TeamSpeakVccs\tTs3G2APtt\t{settings_prf['vccs_ptt_g2a']}")
                 if settings_prf['vccs_ptt_g2g'] is not None:
-                    apply_settings.append(f"TeamSpeakVccs\tTs3G2GPtt\t{settings_prf['vccs_ptt_g2g']}")
-                if (settings_prf['vccs_playback_mode'] is not None) and (settings_prf['vccs_playback_device'] is not None) and (settings_prf['vccs_capture_mode'] is not None) and (settings_prf['vccs_capture_device'] is not None):
-                    apply_settings.append(f"TeamSpeakVccs\tPlaybackMode\t{settings_prf['vccs_playback_mode']}")
-                    apply_settings.append(f"TeamSpeakVccs\tPlaybackDevice\t{settings_prf['vccs_playback_device']}")
-                    apply_settings.append(f"TeamSpeakVccs\tCaptureMode\t{settings_prf['vccs_capture_mode']}")
-                    apply_settings.append(f"TeamSpeakVccs\tCaptureDevice\t{settings_prf['vccs_capture_device']}")
+                    apply_settings.append(
+                        f"TeamSpeakVccs\tTs3G2GPtt\t{settings_prf['vccs_ptt_g2g']}")
+                if ((settings_prf['vccs_playback_mode'] is not None) and
+                    (settings_prf['vccs_playback_device'] is not None) and
+                    (settings_prf['vccs_capture_mode'] is not None) and
+                    (settings_prf['vccs_capture_device'] is not None)):
+                    apply_settings.append(
+                        f"TeamSpeakVccs\tPlaybackMode\t{settings_prf['vccs_playback_mode']}")
+                    apply_settings.append(
+                        f"TeamSpeakVccs\tPlaybackDevice\t{settings_prf['vccs_playback_device']}")
+                    apply_settings.append(
+                        f"TeamSpeakVccs\tCaptureMode\t{settings_prf['vccs_capture_mode']}")
+                    apply_settings.append(
+                        f"TeamSpeakVccs\tCaptureDevice\t{settings_prf['vccs_capture_device']}")
 
                 file_append.write("\n")
                 for setting in apply_settings:
@@ -757,8 +808,10 @@ class CurrentInstallation:
 
             # Do this with **all** *_APP_DL.txt setting files (Departure List)
             if re.match(r"^.*\_APP\_DL.txt", file_path):
-                set_squawk_ukcp = "m_Column:ASSR:5:1:60:9000:9022:1::UK Controller Plugin:UK Controller Plugin:0:0.0"
-                set_vfpc = "m_Column:VFPC:5:0:1:100:9004:1:VFPC (UK):VFPC (UK):UK Controller Plugin:0:0.0"
+                set_squawk_ukcp = ("m_Column:ASSR:5:1:60:9000:9022:1::UK Controller Plugin:"
+                                   "UK Controller Plugin:0:0.0")
+                set_vfpc = ("m_Column:VFPC:5:0:1:100:9004:1:VFPC (UK):VFPC (UK):UK "
+                            "Controller Plugin:0:0.0")
                 set_cdm = [
                         "m_Column:EOBT:5:1:1:120:100:1:CDM Plugin:CDM Plugin:CDM Plugin:0:0.0",
                         "m_Column:E:2:1:9:0:123:1:CDM Plugin::CDM Plugin:0:0.0",
@@ -882,7 +935,11 @@ class Euroscope:
         description = ctypes.c_wchar_p()
         description_length = ctypes.c_uint()
 
-        version_dll.VerQueryValueW(buffer, r'\StringFileInfo\040904b0\FileVersion', ctypes.byref(description), ctypes.byref(description_length))
+        version_dll.VerQueryValueW(
+            buffer,
+            r'\StringFileInfo\040904b0\FileVersion',
+            ctypes.byref(description),
+            ctypes.byref(description_length))
 
         # Print the description
         version_number = description.value
@@ -897,6 +954,9 @@ class Euroscope:
 
         # Carry out the comparison
         if Version(installed_version) > Version(minimum_version):
-            logger.success(f"Installed version of EuroScope (v{installed_version}) is compatible with this script")
+            logger.success(f"Installed version of EuroScope (v{installed_version}) "
+                           "is compatible with this script")
             return True
-        raise ValueError(f"EuroScope version (v{installed_version}) is incompatible with this application. Download the latest version from https://www.euroscope.hu/wp/installation/")
+        raise ValueError(f"EuroScope version (v{installed_version}) is incompatible with this "
+                         "application. Download the latest version from "
+                         "https://www.euroscope.hu/wp/installation/")
