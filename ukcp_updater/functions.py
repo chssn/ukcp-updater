@@ -196,93 +196,93 @@ class Downloader:
             # Open the repository
             repo = git.Repo(folder)
             # Try and switch to the main branch (ie not a tag or commit)
-            switch = True
-            while switch:
-                try:
-                    repo.git.checkout(self.branch)
-                    switch = False
-                except git.exc.GitCommandError:
-                    logger.warning(f"'git checkout {self.branch}' failed due to local changes not being saved... This is quite normal!")
-                    commit = repo.head.commit
+            try:
+                repo.git.checkout(self.branch)
+            except git.exc.GitCommandError:
+                logger.warning(f"'git checkout {self.branch}' failed due to local changes not being saved... This is quite normal!")
 
-                    # Get the changed files
-                    changed_files = [item.a_path for item in commit.diff(None)]
-                    if changed_files:
-                        with open("local/settings.csv", "w", encoding="utf-8") as f_set:
-                            f_set.write("filepath,data\n")
-                            # Get the latest tag (local)
-                            tags = self.get_remote_tags()
-                            logger.info(f"Comparing local changes against tag {tags[-1]} - this will take a minute or so to do...")
-                            break_flag = False
-                            for file in changed_files:
-                                if break_flag:
-                                    break
-                                # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
-                                if str(file).rsplit(".", maxsplit=1)[-1] not in ["prf", "sct", "rwy", "ese"] and os.path.exists(file):
-                                    logger.trace(file)
-                                    file_diff = repo.git.diff(tags[-1], file)
-                                    header = False
-                                    for d_file in str(file_diff).split("\n"):
-                                        # Only look for additions not deletions
-                                        chk = re.match(r"^[\+]([A-Za-z]+.*)", d_file)
-                                        # Exclude any line starting with SECTORFILE or SECTORTITLE - it's a given these will change
-                                        exclude_sector_info = re.match(r"^\+SECTOR[FILE|TITLE].*", d_file)
-                                        # Exclude the last line as git will match it as a change if anything is appended below
-                                        exclude_gnd_trail_dots = re.match(r"^\+PLUGIN:vSMR:GndTrailsDots.*", d_file)
-                                        if chk and not exclude_sector_info and not exclude_gnd_trail_dots:
-                                            if not header:
-                                                logger.info(file)
-                                                header = True
-                                            logger.success(f"Change identified: {chk.group(1)}")
-                                            add_setting = input("Do you want to retain this setting? [y]es | [N]o | [s]kip file | skip [a]ll: ")
-                                            if add_setting.upper() == "Y":
-                                                f_set.write(f"{file},{chk.group(1)}\n")
-                                            elif add_setting.upper() == "S":
-                                                break
-                                            elif add_setting.upper() == "A":
-                                                break_flag = True
-                                                break
+                # Get the changed files
+                changed_files = [item.a_path for item in repo.index.diff(None)]
+                if changed_files:
+                    with open("local/settings.csv", "w", encoding="utf-8") as f_set:
+                        f_set.write("filepath,data\n")
+                        # Get the latest tag (local)
+                        tags = self.get_remote_tags()
+                        logger.info(f"Comparing local changes against tag {tags[-1]} - this will take a minute or so to do...")
+                        break_flag = False
+                        for file in changed_files:
+                            if break_flag:
+                                break
+                            # Anything except .prf which is dealt with elsewhere along with sct, rwy and ese files
+                            if str(file).rsplit(".", maxsplit=1)[-1] not in ["prf", "sct", "rwy", "ese"] and os.path.exists(file):
+                                logger.trace(file)
+                                file_diff = repo.git.diff(tags[-1], file)
+                                header = False
+                                for d_file in str(file_diff).split("\n"):
+                                    # Only look for additions not deletions
+                                    chk = re.match(r"^[\+]([A-Za-z]+.*)", d_file)
+                                    # Exclude any line starting with SECTORFILE or SECTORTITLE - it's a given these will change
+                                    exclude_sector_info = re.match(r"^\+SECTOR[FILE|TITLE].*", d_file)
+                                    # Exclude the last line as git will match it as a change if anything is appended below
+                                    exclude_gnd_trail_dots = re.match(r"^\+PLUGIN:vSMR:GndTrailsDots.*", d_file)
+                                    if chk and not exclude_sector_info and not exclude_gnd_trail_dots:
+                                        if not header:
+                                            logger.info(file)
+                                            header = True
+                                        logger.success(f"Change identified: {chk.group(1)}")
+                                        add_setting = input("Do you want to retain this setting? [y]es | [N]o | [s]kip file | skip [a]ll: ")
+                                        if add_setting.upper() == "Y":
+                                            f_set.write(f"{file},{chk.group(1)}\n")
+                                        elif add_setting.upper() == "S":
+                                            break
+                                        elif add_setting.upper() == "A":
+                                            break_flag = True
+                                            break
 
-                            logger.info("Stashing changes in local repository...")
-                            repo.git.stash()
-                            logger.success(repo.git.rev_parse("stash@{0}"))
-                    else:
-                        logger.info("No changed files.")
+                        logger.info("Stashing changes in local repository...")
+                        repo.git.stash()
+                        logger.success(repo.git.rev_parse("stash@{0}"))
+                else:
+                    logger.info(f"No changed files. {changed_files}")
 
             logger.debug(repo)
             logger.info(f"Requested branch was {self.branch}")
-            logger.info(f"Active branch is {repo.active_branch}")
+            try:
+                active_branch = repo.active_branch
+                logger.info(f"Active branch is {active_branch}")
+                if str(repo.active_branch) == str(self.branch):
+                    # Pull the latest commit
+                    logger.debug(f"Pull {self.repo_url}")
+                    repo.git.stash("save", f"stashed files for {self.airac}")
+                    repo.git.pull()
 
-            if str(repo.active_branch) == str(self.branch):
-                # Pull the latest commit
-                logger.debug(f"Pull {self.repo_url}")
-                repo.git.stash("save", f"stashed files for {self.airac}")
-                repo.git.pull()
+                    # Checkout the latest tag
+                    tags = self.get_remote_tags()
+                    logger.info(f"Checking out {tags[-1]}")
+                    repo.git.checkout(tags[-1])
 
-                # Checkout the latest tag
-                tags = self.get_remote_tags()
-                logger.info(f"Checking out {tags[-1]}")
-                repo.git.checkout(tags[-1])
+                    # Verify that we have the latest tag
+                    if repo.head.is_detached:
+                        commit = repo.head.commit
 
-                # Verify that we have the latest tag
-                if repo.head.is_detached:
-                    commit = repo.head.commit
+                        # Find the tags associated with the commit
+                        tag = None
+                        for r_tag in repo.tags:
+                            if r_tag.commit == commit:
+                                tag = r_tag.name
+                                break
 
-                    # Find the tags associated with the commit
-                    tag = None
-                    for r_tag in repo.tags:
-                        if r_tag.commit == commit:
-                            tag = r_tag.name
-                            break
-
-                    if tag:
-                        logger.info(f"Detached HEAD is associated with the following tag: {tag}")
+                        if tag:
+                            logger.info(f"Detached HEAD is associated with the following tag: {tag}")
+                        else:
+                            logger.warning("Detached HEAD is not associated with any tags.")
                     else:
-                        logger.warning("Detached HEAD is not associated with any tags.")
-                else:
-                    logger.info("HEAD is not detached.")
+                        logger.info("HEAD is not detached.")
 
-                return True
+                    return True
+            except TypeError as e:
+                logger.warning(f"Cannot determine active branch: {e}")
+
         logger.error(f"Folder {folder} was not found!")
         return False
 
@@ -292,25 +292,34 @@ class Downloader:
         # Open the repository
         repo = git.Repo(self.git_path)
 
-        # Drop the stash
-        if repo.head.is_valid():
-            logger.debug(repo)
-            logger.debug(f"git rev-parse stash@{repo.git.rev_parse('stash@{0}')}")
-            stash_list = repo.git.stash("list")
-            logger.debug(stash_list)
-            stash_list = stash_list.split("\n")
-            if stash_list:
-                # Work through the list in reverse as git will 'bump' everything down
-                for stash in reversed(stash_list):
-                    repo.git.stash("drop", str(stash).split(":", maxsplit=1)[0])
-                    logger.debug(f"{str(stash).split(':', maxsplit=1)[0]} has been dropped")
-            else:
-                logger.info("No stash to delete")
-                return None
-        else:
+        # Check if the repo head is valid
+        if not repo.head.is_valid():
             logger.error(f"Invalid response for repo head {repo} {repo.head}")
             return None
-        logger.success("Stashed files have been removed")
+
+        logger.debug(repo)
+
+        # Get the stash list
+        stash_list = repo.git.stash("list")
+        logger.debug(f"Stash list: {stash_list}")
+
+        # Split the stash list into individual stashes
+        stash_list = stash_list.split("\n")
+
+        if stash_list and stash_list[0]:
+            # Work through the list in reverse as git will 'bump' everything down
+            for stash in reversed(stash_list):
+                stash_id = str(stash).split(":", maxsplit=1)[0]
+                try:
+                    repo.git.stash("drop", stash_id)
+                    logger.debug(f"Stash {stash_id} has been dropped")
+                except git.exc.GitCommandError as e:
+                    logger.error(f"Failed to drop stash {stash_id}: {e}")
+        else:
+            logger.info("No stash to delete")
+            return None
+
+    logger.success("All stashed files have been removed")
 
 
 class CurrentInstallation:
