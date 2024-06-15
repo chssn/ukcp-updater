@@ -11,7 +11,6 @@ import ctypes
 import os
 import re
 import subprocess
-from getpass import getpass
 from tkinter import Tk
 from tkinter import filedialog
 from typing import List
@@ -21,10 +20,39 @@ from packaging.version import Version
 import git
 import py7zr
 import requests # type: ignore
+from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
+from InquirerPy.validator import EmptyInputValidator
 from loguru import logger
 
 # Local Libraries
 from ukcp_updater import airac
+
+# https://vatsim.dev/resources/ratings
+RATING_DICT = {
+    "Observer": 1,
+    "Tower Trainee (S1)": 2,
+    "Tower Controller (S2)": 3,
+    "TMA Controller (S3)": 4,
+    "Enroute Controller (C1)": 5,
+    "Senior Controller (C2)": 6,
+    "Senior Controller (C3)": 7,
+    "Instuctor (I1)": 8,
+    "Senior Instuctor (I2)": 9,
+    "Senior Instuctor (I3)": 10,
+    "Supervisor": 11,
+    "Administrator": 12
+}
+
+FACILITY_TYPES = {
+    "Observer": 0,
+    "Flight Service Station": 1,
+    "Clearance Delivery": 2,
+    "Ground": 3,
+    "Tower": 4,
+    "Approach/Departure": 5,
+    "Enroute": 6,
+}
 
 
 class Downloader:
@@ -108,8 +136,9 @@ class Downloader:
                 print("For this tool to work properly, the 'git' package is required.")
                 print("This tool can automatically download the 'git' package from:")
                 print("\thttps://git-scm.com/download/win")
-                consent = input("Are you happy for this tool to install 'git'? [Y|n] ")
-                if consent.upper() == "Y" or consent is None:
+                message = "Are you happy for this tool to install 'git'?"
+                sel = inquirer.confirm(message=message, default=True).execute()
+                if sel:
                     logger.success("User has constented to the 'git' package being installed")
                     if self.install_git():
                         logger.success("Git has been installed")
@@ -153,7 +182,7 @@ class Downloader:
             try:
                 repo.git.checkout(self.branch)
             except git.exc.GitCommandError:
-                logger.warning(f"'git checkout {self.branch}' failed due to local changes "
+                logger.info(f"'git checkout {self.branch}' failed due to local changes "
                                "not being saved... This is quite normal!")
 
                 # Get the changed files
@@ -193,16 +222,18 @@ class Downloader:
                                         if not header:
                                             logger.info(file)
                                             header = True
-                                        logger.success(f"Change identified: {chk.group(1)}")
-                                        add_setting = input(
-                                            "Do you want to retain this setting? [y]es | [N]o "
-                                            "| [s]kip file | skip [a]ll: ")
-                                        if add_setting.upper() == "Y":
+                                        message = (f"Change identified: {chk.group(1)}. "
+                                                   "Do you want to retain this setting?")
+                                        sel = inquirer.confirm(
+                                            message=message, default=True).execute()
+                                        if sel:
                                             f_set.write(f"{file},{chk.group(1)}\n")
-                                        elif add_setting.upper() == "S":
-                                            break
-                                        elif add_setting.upper() == "A":
-                                            break_flag = True
+                                        else:
+                                            message = "Do you want to skip all changes?"
+                                            sel = inquirer.confirm(
+                                                message=message, default=False).execute()
+                                            if sel:
+                                                break_flag = True
                                             break
 
                         logger.info("Stashing changes in local repository...")
@@ -341,22 +372,31 @@ class CurrentInstallation:
         """Allow manual entry of user data"""
 
         if realname or all_data:
-            return_user_data["realname"] = input("Enter your real name or CID: ")
+            return_user_data["realname"] = inquirer.text(
+                message="Enter your real name or CID:",
+                validate=EmptyInputValidator()).execute()
 
         if certificate or all_data:
-            data_cid = "None"
-            while not re.match(r"[\d]{6,8}", data_cid):
-                data_cid = input("Enter your certificate or CID: ")
-            return_user_data["certificate"] = data_cid
+            return_user_data["certificate"] = inquirer.number(
+                message="Enter your certificate or CID:",
+                min_allowed=800000,
+                validate=EmptyInputValidator()).execute()
 
         if password or all_data:
-            return_user_data["password"] = getpass(prompt="Enter your password: ")
+            return_user_data["password"] = inquirer.secret(
+                message="Enter your password:",
+                validate=EmptyInputValidator()
+            )
 
         if rating or all_data:
-            data_rating = "None"
-            while not re.match(r"[\d]{1}", data_rating):
-                data_rating = input("Enter your rating: ")
-            return_user_data["rating"] = data_rating
+            choices:List[str] = []
+            for i, j in RATING_DICT.items():
+                choices.append(Choice(j, name=i))
+            return_user_data["rating"] = inquirer.select(
+                message="Select your rating:",
+                choices=choices,
+                default=None,
+                ).execute()
 
         return return_user_data
 
@@ -384,32 +424,27 @@ class CurrentInstallation:
 
         def menu_option(title:str, data_type:str, options:list) -> str:
             """Menu to select one option out of many!"""
-            while True:
-                print(title)
-                print("-"*30)
-                output = {}
-                number = 0
-                for number, item in enumerate(options, start=1):
-                    print(f"{number}.\t{item}")
-                    output[int(number)] = item
+            choices:list = []
+            if data_type == "rating":
+                for i, j in RATING_DICT.items():
+                    choices.append(Choice(j, name=i))
+            elif data_type == "facility":
+                for i, j in FACILITY_TYPES.items():
+                    choices.append(Choice(j, name=i))
+            else:
+                choices = options
 
-                print(f"n.\tEnter new {data_type}")
-                logger.debug(f"{data_type} menu options are {output}")
+            response = inquirer.select(
+                message=title,
+                choices=choices,
+            ).execute()
 
-                choice = input(f"Please select which {data_type} you wish to use in all profiles: ")
-                if re.match(r"[nN0-9]{1,}", choice):
-                    if choice.upper() == "N":
-                        return input(f"Enter the new {data_type}: ")
-                    elif int(choice) >= 1 and int(choice) <= int(number):
-                        return output[int(choice)]
-                else:
-                    logger.error(f"Invalid input detected, you entered {choice}. Please enter "
-                                 "the number corresponding to the option you wish to use")
+            return response
 
         # Ask the user if they consent to file search for custom settings
-        consent = input(
-            "Do you want us to search your existing files for any custom settings? [Y|n] ")
-        if consent.upper() == "N":
+        msg = "Do you want us to search your existing files for any custom settings?"
+        proceed = inquirer.confirm(message=msg, default=True).execute()
+        if not proceed:
             logger.warning("User consent not given for file search")
             return_user_data = self.manual_entry(return_user_data, all_data=True)
         else:
@@ -422,7 +457,7 @@ class CurrentInstallation:
                 "password": r"LastSession\tpassword\t(.*)",
                 "facility": r"LastSession\tfacility\t([0-9]{1})",
                 "rating": r"LastSession\trating\t([0-9]{1})",
-                "plugins": r"Plugins\tPlugin[0-9]{1}\t([A-Z]{1}\:\\.*)",
+                "plugins": r"Plugins\tPlugin[0-9]{1,2}\t([A-Z]{1}\:\\.*)",
                 "vccs_ptt_g2a": r"TeamSpeakVccs\tTs3G2APtt\t([0-9]{1,10})",
                 "vccs_ptt_g2g": r"TeamSpeakVccs\tTs3G2GPtt\t([0-9]{1,10})",
                 "vccs_playback_mode": r"TeamSpeakVccs\tPlaybackMode\t(.*)",
@@ -468,7 +503,7 @@ class CurrentInstallation:
                     if len(values) > 1:
                         logger.warning(f"More than one setting for {key} has been found!")
                         menu_select = menu_option(
-                            f"Select the {key} you wish to use below", key, list(values))
+                            f"Select the {key} you wish to use below:", key, list(values))
                         return_user_data[key] = menu_select
                     else:
                         return_user_data[key] = next(iter(values), None)
@@ -481,7 +516,10 @@ class CurrentInstallation:
                             "however won't display them!")
                         logger.info("Please enter your password below. Note that no "
                                     "characters or *'s will be displayed!")
-                        return_user_data["password"] = getpass()
+                        return_user_data["password"] = inquirer.secret(
+                            message="Enter your password:",
+                            validate=EmptyInputValidator()
+                        )
                     elif len(values) == 1:
                         return_user_data["password"] = list(values)[0]
                 elif key == "plugins":
@@ -596,9 +634,9 @@ class CurrentInstallation:
                     if airac_format not in sector_file[0]:
                         logger.warning("Your sector file appears out of date with the "
                                        f"current {self.airac} release!")
-                        dl_sector = input(
-                            "Would you like to download the latest sector file? [Y|n] ")
-                        if str(dl_sector).upper() != "N":
+                        msg = "Would you like to download the latest sector file?"
+                        proceed = inquirer.confirm(message=msg, default=True).execute()
+                        if proceed:
                             # Download the latest file
                             url = f"{self.sector_url}UK_{airac_format}.7z"
                             logger.debug(f"Sector file url {url}")
