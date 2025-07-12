@@ -1,3 +1,17 @@
+# Changelog
+
+# [0.8.0](https://github.com/chssn/ukcp-updater/compare/v0.7.3...v0.8.0) (2025-07-12)
+
+
+### Bug Fixes
+
+* git still not playing nicely ([922d0be](https://github.com/chssn/ukcp-updater/commit/922d0beb729b443b77bef090b2e7c151ecb4cb2b))
+
+
+### Features
+
+* update prompts to the inquirer library ([458f204](https://github.com/chssn/ukcp-updater/commit/458f20421b34a8019836852351d6456bc8a5613d))
+
 <!--next-version-placeholder-->
 
 ## v0.7.3 (2023-08-14)
