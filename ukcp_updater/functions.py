@@ -386,7 +386,7 @@ class CurrentInstallation:
             return_user_data["password"] = inquirer.secret(
                 message="Enter your password:",
                 validate=EmptyInputValidator()
-            )
+            ).execute()
 
         if rating or all_data:
             choices:List[str] = []
