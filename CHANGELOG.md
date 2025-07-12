@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.1](https://github.com/chssn/ukcp-updater/compare/v0.8.0...v0.8.1) (2025-07-12)
+
+
+### Bug Fixes
+
+* incorrect ipaddr ([c143cae](https://github.com/chssn/ukcp-updater/commit/c143cae689b33e93bbe73e4e81277bdcb5cd70eb))
+* password not setting correctly ([9237efa](https://github.com/chssn/ukcp-updater/commit/9237efad2986210a1508329dc11dee5936135229))
+
 # [0.8.0](https://github.com/chssn/ukcp-updater/compare/v0.7.3...v0.8.0) (2025-07-12)
 
 
