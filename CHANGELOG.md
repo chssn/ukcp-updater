@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/chssn/ukcp-updater/compare/v0.8.1...v0.8.2) (2025-07-12)
+
+
+### Bug Fixes
+
+* no password entry prompt ([5f84a87](https://github.com/chssn/ukcp-updater/commit/5f84a87267a38e1fe8bb0f65f5a779c16e555797))
+
 ## [0.8.1](https://github.com/chssn/ukcp-updater/compare/v0.8.0...v0.8.1) (2025-07-12)
 
 
