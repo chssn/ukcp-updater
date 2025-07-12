@@ -519,7 +519,7 @@ class CurrentInstallation:
                         return_user_data["password"] = inquirer.secret(
                             message="Enter your password:",
                             validate=EmptyInputValidator()
-                        )
+                        ).execute()
                     elif len(values) == 1:
                         return_user_data["password"] = list(values)[0]
                 elif key == "plugins":
