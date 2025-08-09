@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.3](https://github.com/chssn/ukcp-updater/compare/v0.8.2...v0.8.3) (2025-08-09)
+
+
+### Bug Fixes
+
+* full file location being passed ([59aefa5](https://github.com/chssn/ukcp-updater/commit/59aefa5c35e982205ce3951451a7ac41c0c6ccd9))
+* new url for sector file ([a4b4910](https://github.com/chssn/ukcp-updater/commit/a4b4910bcd262836fe0adf450c534921e4423ccf))
+* there are now multiple sector files within the uk controller pack ([8786eca](https://github.com/chssn/ukcp-updater/commit/8786ecaec5636c233968c883d3832bb119844c56))
+
 ## [0.8.2](https://github.com/chssn/ukcp-updater/compare/v0.8.1...v0.8.2) (2025-07-12)
 
 
