@@ -333,7 +333,7 @@ class CurrentInstallation:
         self.airac = airac_init.current_tag()
 
         # Sector file base URL
-        self.sector_url = "http://www.vatsim.uk/files/sector/esad/"
+        self.sector_url = "http://docs.vatsim.uk/General/Software%20Downloads/Files/"
 
         # Set some vars to do with specific plugins
         self.plugin_vfpc = False
