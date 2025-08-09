@@ -662,10 +662,11 @@ class CurrentInstallation:
                                 os.remove(file_path)
                                 # Clean up old sector files
                                 ext = ["ese", "rwy", "sct"]
-                                logger.debug(f"Sector file name{sector_fn}")
+                                sf_split = str(sf).split("\\")[-1]
+                                logger.debug(f"Sector file name {sf_split}")
                                 for i_ext in ext:
                                     os.remove(f"{self.ukcp_location}\\Data\\Sector\\"
-                                            f"{str(sector_fn[0]).split('.', maxsplit=1)[0]}.{i_ext}")
+                                            f"{str(sf_split).split('.', maxsplit=1)[0]}.{i_ext}")
 
                                 # Return the newly downloaded sector file
                                 loop = False
