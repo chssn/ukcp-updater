@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/chssn/ukcp-updater/compare/v0.8.3...v0.8.4) (2026-02-18)
+
+
+### Bug Fixes
+
+* date drift ([07044aa](https://github.com/chssn/ukcp-updater/commit/07044aa36d392dc9738c977e8bdb29c11d78fb5d))
+
 ## [0.8.3](https://github.com/chssn/ukcp-updater/compare/v0.8.2...v0.8.3) (2025-08-09)
 
 
