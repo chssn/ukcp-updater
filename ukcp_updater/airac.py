@@ -22,7 +22,7 @@ class Airac:
 
     def __init__(self):
         # First AIRAC date following the last cycle length modification
-        self.start_date = "2019-01-02"
+        self.start_date = "2026-01-22"
         self.base_date = datetime.date.fromisoformat(self.start_date)
         # Length of one AIRAC cycle
         self.cycle_days = 28
@@ -67,3 +67,6 @@ class Airac:
         logger.debug(f"Current tag should be {split_cc[0]}/{split_cc[1]}")
 
         return f"{split_cc[0]}/{split_cc[1]}"
+
+airac = Airac()
+print(airac.cycle())
