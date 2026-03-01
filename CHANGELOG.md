@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.5](https://github.com/chssn/ukcp-updater/compare/v0.8.4...v0.8.5) (2026-03-01)
+
+
+### Bug Fixes
+
+* failing too far through if sector file can't be downloaded ([a414570](https://github.com/chssn/ukcp-updater/commit/a414570e40f954f85d5c0f1ba66a22bdc82bedc1))
+
 ## [0.8.4](https://github.com/chssn/ukcp-updater/compare/v0.8.3...v0.8.4) (2026-02-18)
 
 
