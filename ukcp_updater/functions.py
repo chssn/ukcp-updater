@@ -335,9 +335,22 @@ class CurrentInstallation:
         # Sector file base URL
         self.sector_url = "http://docs.vatsim.uk/General/Software%20Downloads/Files/"
 
+        # Test that the sector file exists before wrecking everything!
+        self._check_if_sector_file_dl_exists()
+
         # Set some vars to do with specific plugins
         self.plugin_vfpc = False
         self.plugin_cdm = False
+
+    def _check_if_sector_file_dl_exists(self) -> bool:
+        """Tests to see if the sector file download exists"""
+        airac_format = str(self.airac.replace("/", "_"))
+        url = f"{self.sector_url}UK_{airac_format}.7z"
+        logger.debug(f"Sector file url {url}")
+        sector_7z = requests.get(url, timeout=30)
+        if sector_7z.status_code == 200:
+            return True
+        raise FileExistsError("Unable to locate")
 
     @staticmethod
     def location() -> str:
