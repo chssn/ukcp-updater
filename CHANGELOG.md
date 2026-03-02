@@ -1,5 +1,15 @@
 # Changelog
 
+# [1.0.0](https://github.com/chssn/ukcp-updater/compare/v0.8.5...v1.0.0) (2026-03-02)
+
+
+* BREAKING CHANGE: the whole thing wasn't actually working ([70aca9a](https://github.com/chssn/ukcp-updater/commit/70aca9adbc08308f218c40db92e552ba4e98b5ba))
+
+
+### BREAKING CHANGES
+
+* changed the whole model
+
 ## [0.8.5](https://github.com/chssn/ukcp-updater/compare/v0.8.4...v0.8.5) (2026-03-01)
 
 
