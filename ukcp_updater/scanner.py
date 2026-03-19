@@ -568,28 +568,31 @@ class CurrentInstallation:
                     file.write("END\n")
 
             # Add stored settings from earlier into txt files
-            with open("local/settings.csv", "r", encoding="utf-8") as csv_in:
-                data_in = csv.DictReader(csv_in)
-                for row in data_in:
-                    if row["filepath"].replace("/", "\\") in str(file_path):
-                        logger.debug(f"Change detected: {row['data']}")
+            try:
+                with open("local/settings.csv", "r", encoding="utf-8") as csv_in:
+                    data_in = csv.DictReader(csv_in)
+                    for row in data_in:
+                        if row["filepath"].replace("/", "\\") in str(file_path):
+                            logger.debug(f"Change detected: {row['data']}")
 
-                        # Split the string by ':' and use this as a counter
-                        data_count = row['data'].split(':')
-                        if len(data_count) == 2:
-                            search_string = f"{data_count[0]}"
-                        elif len(data_count) > 2:
-                            search_string = f"{data_count[0]}:{data_count[1]}"
-                        else:
-                            raise ValueError(
-                                f"Unable to generate search string for {row['filepath']}")
+                            # Split the string by ':' and use this as a counter
+                            data_count = row['data'].split(':')
+                            if len(data_count) == 2:
+                                search_string = f"{data_count[0]}"
+                            elif len(data_count) > 2:
+                                search_string = f"{data_count[0]}:{data_count[1]}"
+                            else:
+                                raise ValueError(
+                                    f"Unable to generate search string for {row['filepath']}")
 
-                        for line in lines:
-                            content = re.sub(rf"^{search_string}\:.*", row['data'], line)
-                            if content != line:
-                                logger.info(content.strip())
-                            file.write(content)
-                        file.truncate()
+                            for line in lines:
+                                content = re.sub(rf"^{search_string}\:.*", row['data'], line)
+                                if content != line:
+                                    logger.info(content.strip())
+                                file.write(content)
+                            file.truncate()
+            except FileNotFoundError:
+                logger.warning("Settings file was not found")
 
         logger.info("Updating references to SECTORFILE and SECTORTITLE")
         asr_sector_file()
