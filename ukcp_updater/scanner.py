@@ -474,8 +474,9 @@ class CurrentInstallation:
 
                 # Plugin settings
                 start_count_plugin = int(sorted(plugin_count)[-1]) + 1
-                for count, plugin_fn in enumerate(settings_prf["plugins"], start_count_plugin):
-                    apply_settings.append(f"Plugins\tPlugin{count}\t{plugin_fn}")
+                if settings_prf.get("plugins"):
+                    for count, plugin_fn in enumerate(settings_prf["plugins"], start_count_plugin):
+                        apply_settings.append(f"Plugins\tPlugin{count}\t{plugin_fn}")
 
                 # VCCS settings
                 apply_settings.append(f"TeamSpeakVccs\tTs3NickName\t{settings_prf['certificate']}")
