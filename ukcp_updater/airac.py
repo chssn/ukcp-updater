@@ -67,6 +67,3 @@ class Airac:
         logger.debug(f"Current tag should be {split_cc[0]}/{split_cc[1]}")
 
         return f"{split_cc[0]}/{split_cc[1]}"
-
-airac = Airac()
-print(airac.cycle())
