@@ -382,8 +382,11 @@ class CurrentInstallation:
                                 sf_split = str(sf).split("\\", maxsplit=1)[-1]
                                 logger.debug(f"Sector file name {sf_split}")
                                 for i_ext in ext:
-                                    os.remove(f"{self.ukcp_location}\\Data\\Sector\\"
-                                            f"{str(sf_split).split('.', maxsplit=1)[0]}.{i_ext}")
+                                    try:
+                                        os.remove(f"{self.ukcp_location}\\Data\\Sector\\"
+                                                f"{str(sf_split).split('.', maxsplit=1)[0]}.{i_ext}")
+                                    except FileNotFoundError:
+                                        logger.info("Old sector file already removed!")
 
                                 # Return the newly downloaded sector file
                                 loop = False
