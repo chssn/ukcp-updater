@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/chssn/ukcp-updater/compare/v1.0.1...v1.0.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* failing when not finding any old sector file to delete ([d89963b](https://github.com/chssn/ukcp-updater/commit/d89963ba9bb0b065595276668cdad87a6ded8a36))
+
 ## [1.0.1](https://github.com/chssn/ukcp-updater/compare/v1.0.0...v1.0.1) (2026-03-19)
 
 
