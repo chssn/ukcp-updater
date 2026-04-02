@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/chssn/ukcp-updater/compare/v1.0.0...v1.0.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* failing on no settings file being found ([9089a45](https://github.com/chssn/ukcp-updater/commit/9089a45335da734563fdfe63f5e86455b0c492ec))
+* trying to add null plugins ([0ab5995](https://github.com/chssn/ukcp-updater/commit/0ab59958233f42b35624dac776bebc0b632f7bd6))
+
 # [1.0.0](https://github.com/chssn/ukcp-updater/compare/v0.8.5...v1.0.0) (2026-03-02)
 
 
