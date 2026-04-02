@@ -1,3 +1,73 @@
+# Changelog
+
+## [1.0.1](https://github.com/chssn/ukcp-updater/compare/v1.0.0...v1.0.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* failing on no settings file being found ([9089a45](https://github.com/chssn/ukcp-updater/commit/9089a45335da734563fdfe63f5e86455b0c492ec))
+* trying to add null plugins ([0ab5995](https://github.com/chssn/ukcp-updater/commit/0ab59958233f42b35624dac776bebc0b632f7bd6))
+
+# [1.0.0](https://github.com/chssn/ukcp-updater/compare/v0.8.5...v1.0.0) (2026-03-02)
+
+
+* BREAKING CHANGE: the whole thing wasn't actually working ([70aca9a](https://github.com/chssn/ukcp-updater/commit/70aca9adbc08308f218c40db92e552ba4e98b5ba))
+
+
+### BREAKING CHANGES
+
+* changed the whole model
+
+## [0.8.5](https://github.com/chssn/ukcp-updater/compare/v0.8.4...v0.8.5) (2026-03-01)
+
+
+### Bug Fixes
+
+* failing too far through if sector file can't be downloaded ([a414570](https://github.com/chssn/ukcp-updater/commit/a414570e40f954f85d5c0f1ba66a22bdc82bedc1))
+
+## [0.8.4](https://github.com/chssn/ukcp-updater/compare/v0.8.3...v0.8.4) (2026-02-18)
+
+
+### Bug Fixes
+
+* date drift ([07044aa](https://github.com/chssn/ukcp-updater/commit/07044aa36d392dc9738c977e8bdb29c11d78fb5d))
+
+## [0.8.3](https://github.com/chssn/ukcp-updater/compare/v0.8.2...v0.8.3) (2025-08-09)
+
+
+### Bug Fixes
+
+* full file location being passed ([59aefa5](https://github.com/chssn/ukcp-updater/commit/59aefa5c35e982205ce3951451a7ac41c0c6ccd9))
+* new url for sector file ([a4b4910](https://github.com/chssn/ukcp-updater/commit/a4b4910bcd262836fe0adf450c534921e4423ccf))
+* there are now multiple sector files within the uk controller pack ([8786eca](https://github.com/chssn/ukcp-updater/commit/8786ecaec5636c233968c883d3832bb119844c56))
+
+## [0.8.2](https://github.com/chssn/ukcp-updater/compare/v0.8.1...v0.8.2) (2025-07-12)
+
+
+### Bug Fixes
+
+* no password entry prompt ([5f84a87](https://github.com/chssn/ukcp-updater/commit/5f84a87267a38e1fe8bb0f65f5a779c16e555797))
+
+## [0.8.1](https://github.com/chssn/ukcp-updater/compare/v0.8.0...v0.8.1) (2025-07-12)
+
+
+### Bug Fixes
+
+* incorrect ipaddr ([c143cae](https://github.com/chssn/ukcp-updater/commit/c143cae689b33e93bbe73e4e81277bdcb5cd70eb))
+* password not setting correctly ([9237efa](https://github.com/chssn/ukcp-updater/commit/9237efad2986210a1508329dc11dee5936135229))
+
+# [0.8.0](https://github.com/chssn/ukcp-updater/compare/v0.7.3...v0.8.0) (2025-07-12)
+
+
+### Bug Fixes
+
+* git still not playing nicely ([922d0be](https://github.com/chssn/ukcp-updater/commit/922d0beb729b443b77bef090b2e7c151ecb4cb2b))
+
+
+### Features
+
+* update prompts to the inquirer library ([458f204](https://github.com/chssn/ukcp-updater/commit/458f20421b34a8019836852351d6456bc8a5613d))
+
 <!--next-version-placeholder-->
 
 ## v0.7.3 (2023-08-14)

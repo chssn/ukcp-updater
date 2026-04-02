@@ -1,0 +1,46 @@
+{
+    "branches": ["main"],
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        [
+            "semantic-release-replace-plugin",
+            {
+                "replacements": [
+                  {
+                    "files": ["ukcp_updater/__init__.py"],
+                    "from": "__VERSION__ = \".*\"",
+                    "to": "__VERSION__ = \"${nextRelease.version}\"",
+                    "expect": [
+                      {
+                        "file": "ukcp_updater/__init__.py",
+                        "hasChanged": true,
+                        "numMatches": 1,
+                        "numReplacements": 1
+                      }
+                    ],
+                    "countMatches": true
+                  }
+                ]
+            }
+        ],
+        "@semantic-release/release-notes-generator",
+        "@semantic-release/github",
+        [
+            "@semantic-release/changelog",
+            {
+                "changelogFile": "CHANGELOG.md",
+                "changelogTitle": "# Changelog"
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "assets": [
+                    "CHANGELOG.md",
+                    "ukcp_updater/*.py"
+                ]
+            }
+        ]
+
+    ]
+}
