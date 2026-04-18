@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.3](https://github.com/chssn/ukcp-updater/compare/v1.0.2...v1.0.3) (2026-04-18)
+
+
+### Bug Fixes
+
+* airac not initialising correctly ([4ff66e9](https://github.com/chssn/ukcp-updater/commit/4ff66e9b48a246c8161fbf1cd4ce55446ec3713d))
+* stale tage being pulled ([d02df23](https://github.com/chssn/ukcp-updater/commit/d02df23e731d6bef7ca3197c56624b78cdc9e3fc))
+
+
+### Performance Improvements
+
+* changed stdout log level ([cf13b5a](https://github.com/chssn/ukcp-updater/commit/cf13b5a35a82417f8a4ab6f4c3f33f9ad9293131))
+* removed test code ([9dc3313](https://github.com/chssn/ukcp-updater/commit/9dc3313eac199881df65c36306fb6ecafd085bb8))
+
 ## [1.0.2](https://github.com/chssn/ukcp-updater/compare/v1.0.1...v1.0.2) (2026-04-02)
 
 
