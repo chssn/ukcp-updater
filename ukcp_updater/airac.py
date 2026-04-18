@@ -27,13 +27,10 @@ class Airac:
         # Length of one AIRAC cycle
         self.cycle_days = 28
 
-    def _initialise(self, date_in:str="") -> int:
+    def _initialise(self) -> int:
         """Calculate the number of AIRAC cycles between any given date and the start date"""
 
-        if date_in != "":
-            input_date = datetime.date.fromisoformat(str(date_in))
-        else:
-            input_date = datetime.date.today()
+        input_date = datetime.date.today()
 
         # How many AIRAC cycles have occured since the start date
         diff_cycles = (input_date - self.base_date) / datetime.timedelta(days=1)
@@ -46,10 +43,10 @@ class Airac:
 
         return number_of_cycles
 
-    def cycle(self, next_cycle:bool=False, date_in:str="") -> datetime.date:
+    def cycle(self, next_cycle:bool=False) -> datetime.date:
         """Return the date of the current AIRAC cycle"""
 
-        number_of_cycles = self._initialise(date_in)
+        number_of_cycles = self._initialise()
         if next_cycle:
             number_of_days = (number_of_cycles + 1) * self.cycle_days + 1
         else:
