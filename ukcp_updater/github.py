@@ -124,12 +124,9 @@ class Downloader:
             git.Repo.clone_from(self.repo_url, folder, branch=self.branch)
             logger.success("The repo has been successfully cloned")
 
-            # Checkout the latest tag
-            tags = self.get_remote_tags()
-            logger.debug(f"Returned tags: {tags}")
-            logger.info(f"Checking out {tags[-1]}")
+            # Ensure that we're on the main branch
             repo = git.Repo(folder)
-            repo.git.checkout(tags[-1])
+            repo.git.checkout(self.branch)
 
         return False
 
