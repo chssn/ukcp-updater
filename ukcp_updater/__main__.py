@@ -21,7 +21,7 @@ def main():
 
     # Set debug level
     logger.remove()
-    logger.add(sys.stderr, level="DEBUG")
+    logger.add(sys.stderr, level="INFO")
 
     # Intro
     os.system("cls")
