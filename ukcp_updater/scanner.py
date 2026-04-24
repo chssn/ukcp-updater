@@ -55,7 +55,7 @@ class CurrentInstallation:
         sector_7z = requests.get(url, timeout=30)
         if sector_7z.status_code == 200:
             return True
-        raise FileExistsError("Unable to locate")
+        raise FileExistsError(f"Unable to locate {url}")
 
     def _location(self, live:str) -> str:
         """Find the current location of UKCP"""
