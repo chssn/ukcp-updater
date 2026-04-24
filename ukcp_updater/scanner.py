@@ -49,12 +49,14 @@ class CurrentInstallation:
 
     def _check_if_sector_file_dl_exists(self) -> bool:
         """Tests to see if the sector file download exists"""
-        airac_format = str(self.airac.replace("/", "_"))
-        url = f"{self.sector_url}UK_{airac_format}.7z"
-        logger.debug(f"Sector file url {url}")
-        sector_7z = requests.get(url, timeout=30)
-        if sector_7z.status_code == 200:
-            return True
+        for version in ["", "a", "b", "c", "d", "e", "f"]:
+            airac_format = str(self.airac.replace("/", "_"))
+            url = f"{self.sector_url}UK_{airac_format}{version}.7z"
+            logger.debug(f"Looking up sector file at url {url}")
+            sector_7z = requests.get(url, timeout=30)
+            if sector_7z.status_code == 200:
+                self.airac = f"{self.airac}{version}"
+                return True
         raise FileExistsError(f"Unable to locate {url}")
 
     def _location(self, live:str) -> str:
