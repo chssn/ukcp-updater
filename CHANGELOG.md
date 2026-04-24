@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/chssn/ukcp-updater/compare/v1.0.3...v1.0.4) (2026-04-24)
+
+
+### Bug Fixes
+
+* mid airac changes not being picked up ([9aef7c0](https://github.com/chssn/ukcp-updater/commit/9aef7c0be3932ae3382a1bbbd94858a630d37a34))
+
 ## [1.0.3](https://github.com/chssn/ukcp-updater/compare/v1.0.2...v1.0.3) (2026-04-18)
 
 
