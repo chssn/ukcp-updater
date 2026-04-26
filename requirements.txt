@@ -1,6 +1,6 @@
 packaging==20.9
 loguru==0.7.0
-GitPython==3.1.41
+GitPython==3.1.47
 py7zr==0.20.5
 pytest==7.3.2
 Requests==2.32.0
