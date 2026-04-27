@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/chssn/ukcp-updater/compare/v1.0.4...v1.0.5) (2026-04-27)
+
+
+### Bug Fixes
+
+* regex too restrictive for intermediate airac releases ([9f7be45](https://github.com/chssn/ukcp-updater/commit/9f7be45e42bcc789fa86c461436b4b7c8ab0af32))
+
 ## [1.0.4](https://github.com/chssn/ukcp-updater/compare/v1.0.3...v1.0.4) (2026-04-24)
 
 
