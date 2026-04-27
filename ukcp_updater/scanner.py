@@ -352,7 +352,7 @@ class CurrentInstallation:
                     sector_file.append("*")
                     sector_fn.append("*")
                 for sf in sector_file:
-                    if re.match(r"^.*\\UK_20\d{2}_\d{2}\.sct$", sf):
+                    if re.match(r"^.*\\UK_20\d{2}_\d{2}[a-z]?\.sct$", sf):
                         logger.info(f"Sector file found at {sf}")
 
                         # Check the sector file matches the current AIRAC cycle
