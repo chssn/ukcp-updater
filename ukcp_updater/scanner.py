@@ -407,7 +407,7 @@ class CurrentInstallation:
             raise ValueError("Sector file couldn't be found")
 
         @iter_files(".asr", "r+")
-        def asr_sector_file(lines=None, file=None, file_path=None):
+        def asr_sector_file(lines=None, file=None, file_path=""):
             """Updates all 'asr' files to include the latest sector file"""
 
             sector_file = f"SECTORFILE:{sct_file}"
@@ -440,7 +440,7 @@ class CurrentInstallation:
                         file_append.write(sector_title + "\n")
 
         @iter_files(".prf", "r+")
-        def prf_files(lines=None, file=None, file_path=None):
+        def prf_files(lines=None, file=None, file_path=""):
             """Updates all 'prf' files to include the latest sector file"""
 
             sector_file = f"Settings\tsector\t{sct_file}"
@@ -511,7 +511,7 @@ class CurrentInstallation:
                     file_append.write(setting + "\n")
 
         @iter_files(".txt", "r+")
-        def txt_files(lines=None, file=None, file_path=None):
+        def txt_files(lines=None, file=None, file_path=""):
             """Updates txt (settings) files"""
 
             if not lines or not file or not file_path:
