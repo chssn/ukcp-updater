@@ -3,4 +3,4 @@ UKCP Updater
 Chris Parkinson (@chssn)
 """
 
-__VERSION__ = "1.0.5"
+__VERSION__ = "1.1.0"

@@ -1,5 +1,21 @@
 # Changelog
 
+# [1.1.0](https://github.com/chssn/ukcp-updater/compare/v1.0.5...v1.1.0) (2026-05-13)
+
+
+### Bug Fixes
+
+* file_path cannot be None ([85fd723](https://github.com/chssn/ukcp-updater/commit/85fd72344c19703a5cf6e23d7682114a867c2c4d))
+* incorrect column size ([2ccac76](https://github.com/chssn/ukcp-updater/commit/2ccac76d057435f978a6625e6cd10abdd33947ba))
+* text being added as a plugin ([34f1cf4](https://github.com/chssn/ukcp-updater/commit/34f1cf4bbf205a387ef9db2e573eadc33f401443))
+* vccs mini control shouldn't be shown by default ([131898e](https://github.com/chssn/ukcp-updater/commit/131898ef589d7690fb8dedb6a8a02acbd677d663))
+
+
+### Features
+
+* removed vccs, cdm and vfpc as all now default options ([6c4956b](https://github.com/chssn/ukcp-updater/commit/6c4956b8a923730c6db43718883285191c7bcccb))
+* vccs no longer included ([1180af4](https://github.com/chssn/ukcp-updater/commit/1180af462294cfe0785353a875532ebf8e95312f))
+
 ## [1.0.5](https://github.com/chssn/ukcp-updater/compare/v1.0.4...v1.0.5) (2026-04-27)
 
 
