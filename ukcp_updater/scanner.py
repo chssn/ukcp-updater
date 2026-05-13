@@ -268,7 +268,7 @@ class CurrentInstallation:
                                     self.plugin_cdm = True
                     else:
                         logger.info("No custom (non UKCP) plugins were detected")
-                        plugin_out = ["No custom (non UKCP) plugins were detected"]
+                        plugin_out = []
 
                     return_user_data["plugins"] = plugin_out
 
