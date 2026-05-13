@@ -502,53 +502,6 @@ class CurrentInstallation:
                     file.write(content)
                 file.truncate()
 
-            # Do this with **all** *_APP_DL.txt setting files (Departure List)
-            if re.match(r"^.*\_APP\_DL.txt", file_path):
-                set_squawk_ukcp = ("m_Column:ASSR:5:1:60:9000:9022:1::UK Controller Plugin:"
-                                   "UK Controller Plugin:0:0.0")
-                set_vfpc = "m_Column:FPL:3:1:1:100:100:1:VFPC (UK):VFPC (UK):VFPC (UK):4:0.0"
-                set_cdm = [
-                        "m_Column:EOBT:5:1:1:120:100:1:CDM Plugin:CDM Plugin:CDM Plugin:0:0.0",
-                        "m_Column:E:2:1:9:0:123:1:CDM Plugin::CDM Plugin:0:0.0",
-                        "m_Column:TOBT:5:1:4:121:115:1:CDM Plugin:CDM Plugin:CDM Plugin:0:0.0",
-                        "m_Column:TSAT:5:1:2:0:0:1:CDM Plugin:::0:0.0",
-                        "m_Column:TTOT:5:1:3:0:0:1:CDM Plugin:::0:0.0",
-                        "m_Column:TSAC:5:1:5:122:104:1:CDM Plugin:CDM Plugin:CDM Plugin:0:0.0",
-                        "m_Column:ASAT:5:1:6:0:0:1:CDM Plugin:::0:0.0",
-                        "m_Column:ASRT:5:1:7:107:0:1:CDM Plugin:CDM Plugin::0:0.0",
-                        "m_Column:CTOT:5:1:10:108:0:1:CDM Plugin:CDM Plugin::0:0.0",
-                        "m_Column:STUP:7:1:9:106:0:1::CDM Plugin::0:0.0",
-                    ]
-
-                # Set the ASSR column to use ukcp squawk
-                for line in lines:
-                    content = re.sub(r"^m_Column:ASSR", set_squawk_ukcp, line)
-                    file.write(content)
-                file.truncate()
-
-                # Add the VFPC column if requested earlier
-                if self.plugin_vfpc:
-                    file.seek(0)
-                    lines = file.readlines()  # Read the modified content
-                    file.seek(0)
-                    file.truncate()  # Clear the file
-                    for line in lines:
-                        content = re.sub(r"^END", set_vfpc + "\nEND", line)
-                        file.write(content)
-
-                # Add the CDM columns if requested earlier
-                if self.plugin_cdm:
-                    file.seek(0)
-                    lines = file.readlines()  # Read the modified content
-                    file.seek(0)
-                    file.truncate()  # Clear the file
-                    for line in lines:
-                        content = re.sub(r"^END", set_cdm[0], line)
-                        file.write(content)
-                    for count, config in enumerate(set_cdm[1:], start=1):
-                        file.write(config + "\n")
-                    file.write("END\n")
-
             # Add stored settings from earlier into txt files
             try:
                 with open("local/settings.csv", "r", encoding="utf-8") as csv_in:
