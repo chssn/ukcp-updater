@@ -529,8 +529,7 @@ class CurrentInstallation:
             if re.match(r"^.*\_APP\_DL.txt", file_path):
                 set_squawk_ukcp = ("m_Column:ASSR:5:1:60:9000:9022:1::UK Controller Plugin:"
                                    "UK Controller Plugin:0:0.0")
-                set_vfpc = ("m_Column:VFPC:5:0:1:100:9004:1:VFPC (UK):VFPC (UK):UK "
-                            "Controller Plugin:0:0.0")
+                set_vfpc = "m_Column:FPL:3:1:1:100:100:1:VFPC (UK):VFPC (UK):VFPC (UK):4:0.0"
                 set_cdm = [
                         "m_Column:EOBT:5:1:1:120:100:1:CDM Plugin:CDM Plugin:CDM Plugin:0:0.0",
                         "m_Column:E:2:1:9:0:123:1:CDM Plugin::CDM Plugin:0:0.0",
