@@ -483,29 +483,6 @@ class CurrentInstallation:
                     for count, plugin_fn in enumerate(settings_prf["plugins"], start_count_plugin):
                         apply_settings.append(f"Plugins\tPlugin{count}\t{plugin_fn}")
 
-                # VCCS settings
-                apply_settings.append(f"TeamSpeakVccs\tTs3NickName\t{settings_prf['certificate']}")
-                apply_settings.append("TeamSpeakVccs\tTsVccsMiniControlX\t1581")
-                apply_settings.append("TeamSpeakVccs\tTsVccsMiniControlY\t198")
-                if settings_prf['vccs_ptt_g2a'] is not None:
-                    apply_settings.append(
-                        f"TeamSpeakVccs\tTs3G2APtt\t{settings_prf['vccs_ptt_g2a']}")
-                if settings_prf['vccs_ptt_g2g'] is not None:
-                    apply_settings.append(
-                        f"TeamSpeakVccs\tTs3G2GPtt\t{settings_prf['vccs_ptt_g2g']}")
-                if ((settings_prf['vccs_playback_mode'] is not None) and
-                    (settings_prf['vccs_playback_device'] is not None) and
-                    (settings_prf['vccs_capture_mode'] is not None) and
-                    (settings_prf['vccs_capture_device'] is not None)):
-                    apply_settings.append(
-                        f"TeamSpeakVccs\tPlaybackMode\t{settings_prf['vccs_playback_mode']}")
-                    apply_settings.append(
-                        f"TeamSpeakVccs\tPlaybackDevice\t{settings_prf['vccs_playback_device']}")
-                    apply_settings.append(
-                        f"TeamSpeakVccs\tCaptureMode\t{settings_prf['vccs_capture_mode']}")
-                    apply_settings.append(
-                        f"TeamSpeakVccs\tCaptureDevice\t{settings_prf['vccs_capture_device']}")
-
                 file_append.write("\n")
                 for setting in apply_settings:
                     file_append.write(setting + "\n")
