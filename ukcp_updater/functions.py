@@ -79,7 +79,10 @@ def sync_cache_to_live(cache_dir: str, live_dir: str):
 
             # If exists but differs → overwrite
             if not filecmp.cmp(src, dst, shallow=False):
-                shutil.copy2(src, dst)
+                try:
+                    shutil.copy2(src, dst)
+                except PermissionError as err:
+                    logger.error(err)
 
         # Ensure subdirs exist
         for name in dirs:
