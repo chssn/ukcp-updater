@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.2.0](https://github.com/chssn/ukcp-updater/compare/v1.1.0...v1.2.0) (2026-06-30)
+
+
+### Features
+
+* search PlugIn folder for custom plugins ([7ead303](https://github.com/chssn/ukcp-updater/commit/7ead30324f9a1252b78db46b0621a380aa07d96f))
+* update VATUK files ([7f8ef1a](https://github.com/chssn/ukcp-updater/commit/7f8ef1ac395c8db1feecf8f794cda5dbebf5904c))
+
 # [1.1.0](https://github.com/chssn/ukcp-updater/compare/v1.0.5...v1.1.0) (2026-05-13)
 
 
