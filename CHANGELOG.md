@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/chssn/ukcp-updater/compare/v1.2.0...v1.2.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* sector file name not building correctly ([e2330e9](https://github.com/chssn/ukcp-updater/commit/e2330e983c1a57aa735bdb87c504a69cbe4b2f0f))
+
 # [1.2.0](https://github.com/chssn/ukcp-updater/compare/v1.1.0...v1.2.0) (2026-06-30)
 
 
