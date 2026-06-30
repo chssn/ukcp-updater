@@ -516,12 +516,12 @@ class CurrentInstallation:
                 airac_format = str(self.airac.replace("/", "_"))
                 set_sector_version = f"SECTOR_VERSION:{airac_format}"
                 for line in lines:
-                    content = re.sub(r"^SECTOR_VERSION\:.*", set_sector_version, line)
+                    content = re.sub(r"^SECTOR\_VERSION\:.*", set_sector_version, line)
                     file.write(content)
                 file.truncate()
             if re.match(r".*VATUK_SectorFile.*\.txt", file_path):
                 appdata_folder = os.environ["APPDATA"]
-                corrected_file_path = os.path.join(
+                fp_file_path = os.path.join(
                     appdata_folder,
                     "EuroScope",
                     "ukcp-live",
@@ -529,6 +529,7 @@ class CurrentInstallation:
                     "Data",
                     "Sector",
                     "VATUK_Euroscope_files.txt")
+                corrected_file_path = f"LOCALFILE:{fp_file_path}".replace("\\", "\\\\")
                 for line in lines:
                     content = re.sub(r"^LOCALFILE\:.*", corrected_file_path, line)
                     file.write(content)
