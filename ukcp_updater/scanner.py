@@ -203,6 +203,15 @@ class CurrentInstallation:
                 "hoppies_cpdlc_password": set(),
             })
 
+            appdata_folder = os.environ["APPDATA"]
+            plugin_path = os.path.join(appdata_folder, "EuroScope", "PlugIn")
+            for root, _, files in os.walk(plugin_path):
+                for file_name in files:
+                    if file_name.endswith(".dll"):
+                        file_path = os.path.join(root, file_name)
+                        logger.info(f"Found {file_path}")
+                        return_user_data["plugins"].add(file_path)
+
             # Iterate over files in the directory and search within each file
             for root, dirs, files in os.walk(self.ukcp_location):
                 for file_name in files:
