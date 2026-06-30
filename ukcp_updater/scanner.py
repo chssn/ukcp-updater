@@ -213,7 +213,7 @@ class CurrentInstallation:
                         return_user_data["plugins"].add(file_path)
 
             # Iterate over files in the directory and search within each file
-            for root, dirs, files in os.walk(self.ukcp_location):
+            for root, _, files in os.walk(self.ukcp_location):
                 for file_name in files:
                     if file_name.endswith(".prf"):
                         file_path = os.path.join(root, file_name)
