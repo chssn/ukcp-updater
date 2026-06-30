@@ -511,6 +511,29 @@ class CurrentInstallation:
                     file.write(content)
                 file.truncate()
 
+            # Correct VATUK_*.txt files
+            if re.match(r".*VATUK\_Euroscope.*\.txt", file_path):
+                airac_format = str(self.airac.replace("/", "_"))
+                set_sector_version = f"SECTOR_VERSION:{airac_format}"
+                for line in lines:
+                    content = re.sub(r"^SECTOR_VERSION\:.*", set_sector_version, line)
+                    file.write(content)
+                file.truncate()
+            if re.match(r".*VATUK_SectorFile.*\.txt", file_path):
+                appdata_folder = os.environ["APPDATA"]
+                corrected_file_path = os.path.join(
+                    appdata_folder,
+                    "EuroScope",
+                    "ukcp-live",
+                    "UK",
+                    "Data",
+                    "Sector",
+                    "VATUK_Euroscope_files.txt")
+                for line in lines:
+                    content = re.sub(r"^LOCALFILE\:.*", corrected_file_path, line)
+                    file.write(content)
+                file.truncate()
+
             # Add stored settings from earlier into txt files
             try:
                 with open("local/settings.csv", "r", encoding="utf-8") as csv_in:
