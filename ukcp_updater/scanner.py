@@ -203,8 +203,17 @@ class CurrentInstallation:
                 "hoppies_cpdlc_password": set(),
             })
 
+            appdata_folder = os.environ["APPDATA"]
+            plugin_path = os.path.join(appdata_folder, "EuroScope", "PlugIn")
+            for root, _, files in os.walk(plugin_path):
+                for file_name in files:
+                    if file_name.endswith(".dll"):
+                        file_path = os.path.join(root, file_name)
+                        logger.info(f"Found {file_path}")
+                        return_user_data["plugins"].add(file_path)
+
             # Iterate over files in the directory and search within each file
-            for root, dirs, files in os.walk(self.ukcp_location):
+            for root, _, files in os.walk(self.ukcp_location):
                 for file_name in files:
                     if file_name.endswith(".prf"):
                         file_path = os.path.join(root, file_name)
@@ -497,6 +506,30 @@ class CurrentInstallation:
                 show_vccs = "m_ShowTsVccsMiniControl:0"
                 new_lines = [re.sub(r"^m_ShowTsVccsMiniControl:[01]", show_vccs, line)
                              for line in new_lines]
+
+            # Correct VATUK_*.txt files
+            if re.match(r".*VATUK\_Euroscope.*\.txt", file_path):
+                airac_format = str(self.airac.replace("/", "_"))
+                set_sector_version = f"SECTOR_VERSION:{airac_format}"
+                for line in lines:
+                    content = re.sub(r"^SECTOR\_VERSION\:.*", set_sector_version, line)
+                    file.write(content)
+                file.truncate()
+            if re.match(r".*VATUK_SectorFile.*\.txt", file_path):
+                appdata_folder = os.environ["APPDATA"]
+                fp_file_path = os.path.join(
+                    appdata_folder,
+                    "EuroScope",
+                    "ukcp-live",
+                    "UK",
+                    "Data",
+                    "Sector",
+                    "VATUK_Euroscope_files.txt")
+                corrected_file_path = f"LOCALFILE:{fp_file_path}".replace("\\", "\\\\")
+                for line in lines:
+                    content = re.sub(r"^LOCALFILE\:.*", corrected_file_path, line)
+                    file.write(content)
+                file.truncate()
 
             # Add stored settings from earlier into txt files
             try:
