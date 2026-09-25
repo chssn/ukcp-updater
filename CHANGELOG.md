@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.2](https://github.com/chssn/ukcp-updater/compare/v1.2.1...v1.2.2) (2026-09-25)
+
+
+### Bug Fixes
+
+* failing on permission error ([8024fba](https://github.com/chssn/ukcp-updater/commit/8024fbaa693e4169f450bef38df4dd03aaea705e))
+* updates never pulled and several profile-corrupting bugs ([5e45a9c](https://github.com/chssn/ukcp-updater/commit/5e45a9c6b750bed140a4ceb6cfc97d93ee7cce9f))
+
 ## [1.2.1](https://github.com/chssn/ukcp-updater/compare/v1.2.0...v1.2.1) (2026-06-30)
 
 
