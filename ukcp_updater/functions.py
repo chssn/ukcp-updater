@@ -8,6 +8,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import os
 import shutil
+import stat
 import filecmp
 
 # Third Party Libraries
@@ -49,6 +50,24 @@ def should_ignore(filename: str) -> bool:
     ext = os.path.splitext(filename)[1].lower()
     return ext in IGNORE_EXT or filename in IGNORE_NAMES
 
+def remove_stale_git(live_dir: str):
+    """Remove a .git folder copied into live by older versions of this tool"""
+
+    stale_git = os.path.join(live_dir, ".git")
+    if not os.path.isdir(stale_git):
+        return
+
+    def make_writable(func, path, _):
+        # Git marks its object files read-only which stops rmtree on Windows
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+
+    logger.info(f"Removing old git data from {stale_git}")
+    try:
+        shutil.rmtree(stale_git, onerror=make_writable)
+    except OSError as err:
+        logger.error(err)
+
 def sync_cache_to_live(cache_dir: str, live_dir: str):
     """
     Copy cache -> live
@@ -56,7 +75,12 @@ def sync_cache_to_live(cache_dir: str, live_dir: str):
     Overwrite outdated files
     """
 
+    if os.path.abspath(cache_dir) != os.path.abspath(live_dir):
+        remove_stale_git(live_dir)
+
     for root, dirs, files in os.walk(cache_dir):
+        # Don't copy the git repo metadata into the live folder
+        dirs[:] = [name for name in dirs if name != ".git"]
 
         rel = os.path.relpath(root, cache_dir)
         live_root = os.path.join(live_dir, rel)
@@ -72,17 +96,15 @@ def sync_cache_to_live(cache_dir: str, live_dir: str):
             src = os.path.join(root, name)
             dst = os.path.join(live_root, name)
 
-            # If file missing → copy
-            if not os.path.exists(dst):
-                shutil.copy2(src, dst)
+            # If exists and matches → leave it
+            if os.path.exists(dst) and filecmp.cmp(src, dst, shallow=False):
                 continue
 
-            # If exists but differs → overwrite
-            if not filecmp.cmp(src, dst, shallow=False):
-                try:
-                    shutil.copy2(src, dst)
-                except PermissionError as err:
-                    logger.error(err)
+            # If missing or differs → copy
+            try:
+                shutil.copy2(src, dst)
+            except PermissionError as err:
+                logger.error(err)
 
         # Ensure subdirs exist
         for name in dirs:

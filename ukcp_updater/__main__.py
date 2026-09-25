@@ -41,6 +41,7 @@ def main():
         user_settings = update.user_settings()
 
         # Stash any changes and run 'git pull'
+        git.pull()
         functions.sync_cache_to_live(git.git_path, git.live_path)
 
         # Append user settings

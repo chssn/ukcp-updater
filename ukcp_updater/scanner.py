@@ -44,8 +44,8 @@ class CurrentInstallation:
         self._check_if_sector_file_dl_exists()
 
         # Set some vars to do with specific plugins
-        self.plugin_vfpc = False
-        self.plugin_cdm = False
+        self.plugin_vfpc = True
+        self.plugin_cdm = True
 
     def _check_if_sector_file_dl_exists(self) -> bool:
         """Tests to see if the sector file download exists"""
@@ -174,8 +174,8 @@ class CurrentInstallation:
                 "realname": r"LastSession\trealname\t(.*)",
                 "certificate": r"LastSession\tcertificate\t([0-9]{4,})",
                 "password": r"LastSession\tpassword\t(.*)",
-                "facility": r"LastSession\tfacility\t([0-9]{1})",
-                "rating": r"LastSession\trating\t([0-9]{1})",
+                "facility": r"LastSession\tfacility\t([0-9]+)",
+                "rating": r"LastSession\trating\t([0-9]+)",
                 "plugins": r"Plugins\tPlugin[0-9]{1,2}\t([A-Z]{1}\:\\.*)",
                 "vccs_ptt_g2a": r"TeamSpeakVccs\tTs3G2APtt\t([0-9]{1,10})",
                 "vccs_ptt_g2g": r"TeamSpeakVccs\tTs3G2GPtt\t([0-9]{1,10})",
@@ -241,6 +241,9 @@ class CurrentInstallation:
                         ).execute()
                     elif len(values) == 1:
                         return_user_data["password"] = list(values)[0]
+                    else:
+                        # Nothing found, so leave it for manual entry below
+                        return_user_data["password"] = None
                 elif key == "plugins":
                     # Handle plugins separately
                     plugins = return_user_data["plugins"]
@@ -274,13 +277,13 @@ class CurrentInstallation:
 
         # Check for "None" entries
         if return_user_data["realname"] is None:
-            return_user_data = self.manual_entry(return_user_data, realname=True)
+            return_user_data = self.manual_entry(return_user_data, realname=True, all_data=False)
         if return_user_data["certificate"] is None:
-            return_user_data = self.manual_entry(return_user_data, certificate=True)
+            return_user_data = self.manual_entry(return_user_data, certificate=True, all_data=False)
         if return_user_data["password"] is None:
-            return_user_data = self.manual_entry(return_user_data, password=True)
+            return_user_data = self.manual_entry(return_user_data, password=True, all_data=False)
         if return_user_data["rating"] is None:
-            return_user_data = self.manual_entry(return_user_data, rating=True)
+            return_user_data = self.manual_entry(return_user_data, rating=True, all_data=False)
 
         # User information
         print("The following data will be appended to all profiles in the UK Controller Pack")
@@ -332,73 +335,65 @@ class CurrentInstallation:
         def get_sector_file():
             """Get the sector file name"""
 
-            loop = True
             sector_file_list = [
                 'Akrotiri LCRA.sct',
                 'Ascension and St Helena.sct',
                 'Falkland.sct',
                 'Gibraltar LXGB.sct'
                 ]
-            while loop:
-                sector_file = []
-                sector_fn = []
-                for root, dirs, files in os.walk(self.ukcp_location):
-                    for file_name in files:
-                        if file_name.endswith(".sct"):
-                            sector_file.append(os.path.join(root, file_name))
-                            sector_fn.append(file_name)
+            sector_file = []
+            for root, dirs, files in os.walk(self.ukcp_location):
+                for file_name in files:
+                    if file_name.endswith(".sct"):
+                        sector_file.append(os.path.join(root, file_name))
 
-                if len(sector_file) == 0:
-                    sector_file.append("*")
-                    sector_fn.append("*")
-                for sf in sector_file:
-                    if re.match(r"^.*\\UK_20\d{2}_\d{2}[a-z]?\.sct$", sf):
-                        logger.info(f"Sector file found at {sf}")
+            for sf in sector_file:
+                if re.match(r"^.*\\UK_20\d{2}_\d{2}[a-z]?\.sct$", sf):
+                    logger.info(f"Sector file found at {sf}")
 
-                        # Check the sector file matches the current AIRAC cycle
-                        airac_format = str(self.airac.replace("/", "_"))
-                        if airac_format not in sf:
-                            logger.warning("Your sector file appears out of date with the "
-                                        f"current {self.airac} release!")
-                            msg = "Would you like to download the latest sector file?"
-                            proceed = confirm(message=msg, default=True).execute()
-                            if proceed:
-                                # Download the latest file
-                                url = f"{self.sector_url}UK_{airac_format}.7z"
-                                logger.debug(f"Sector file url {url}")
-                                sector_7z = requests.get(url, timeout=30)
+                    # Check the sector file matches the current AIRAC cycle
+                    airac_format = str(self.airac.replace("/", "_"))
+                    if airac_format not in sf:
+                        logger.warning("Your sector file appears out of date with the "
+                                    f"current {self.airac} release!")
+                        msg = "Would you like to download the latest sector file?"
+                        proceed = confirm(message=msg, default=True).execute()
+                        if proceed:
+                            # Download the latest file
+                            url = f"{self.sector_url}UK_{airac_format}.7z"
+                            logger.debug(f"Sector file url {url}")
+                            sector_7z = requests.get(url, timeout=30)
 
-                                # Write it to local file
-                                file_path = f"local\\UK_{airac_format}.7z"
-                                with open(file_path, "wb") as file:
-                                    file.write(sector_7z.content)
+                            # Write it to local file
+                            file_path = f"local\\UK_{airac_format}.7z"
+                            with open(file_path, "wb") as file:
+                                file.write(sector_7z.content)
 
-                                # Extract the contents of the archive
-                                with py7zr.SevenZipFile(file_path, mode="r") as archive:
-                                    archive.extractall(path=f"{self.ukcp_location}\\Data\\Sector")
+                            # Extract the contents of the archive
+                            with py7zr.SevenZipFile(file_path, mode="r") as archive:
+                                archive.extractall(path=f"{self.ukcp_location}\\Data\\Sector")
 
-                                # Clean up artifacts
-                                os.remove(file_path)
-                                # Clean up old sector files
-                                ext = ["ese", "rwy", "sct"]
-                                sf_split = str(sf).split("\\", maxsplit=1)[-1]
-                                logger.debug(f"Sector file name {sf_split}")
-                                for i_ext in ext:
-                                    try:
-                                        os.remove(f"{self.ukcp_location}\\Data\\Sector\\"
-                                                f"{str(sf_split).split('.', maxsplit=1)[0]}.{i_ext}")
-                                    except FileNotFoundError:
-                                        logger.info("Old sector file already removed!")
+                            # Clean up artifacts
+                            os.remove(file_path)
+                            # Clean up old sector files that sit alongside the old .sct
+                            old_sf_base = os.path.splitext(sf)[0]
+                            logger.debug(f"Old sector file {old_sf_base}")
+                            for i_ext in ["ese", "rwy", "sct"]:
+                                try:
+                                    os.remove(f"{old_sf_base}.{i_ext}")
+                                except FileNotFoundError:
+                                    logger.info("Old sector file already removed!")
 
-                                # Return the newly downloaded sector file
-                                loop = False
-                                return str(f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct")
-                        loop = False
-                        return str(sf)
-                    elif str(sf).split("\\", maxsplit=1)[-1] in sector_file_list:
-                        logger.debug(f"{sf} validated as part of UKCP sector file")
-                    else:
-                        logger.warning(f"{sf} could not be validated! {sector_file}")
+                            # Return the newly downloaded sector file
+                            return str(f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct")
+                    return str(sf)
+                elif os.path.basename(sf) in sector_file_list:
+                    logger.debug(f"{sf} validated as part of UKCP sector file")
+                else:
+                    logger.warning(f"{sf} could not be validated!")
+
+            # No UK sector file found
+            return None
 
         sct_file = get_sector_file()
         if sct_file:
@@ -459,9 +454,9 @@ class CurrentInstallation:
 
                 # See if this line relates to plugins and determine what number they go up to
                 # This is only applied on a fresh pull
-                plugin_chk = re.match(r"^Plugins\tPlugin([\d]{1})\t.*", line)
+                plugin_chk = re.match(r"^Plugins\tPlugin(\d+)\t.*", line)
                 if plugin_chk:
-                    plugin_count.add(plugin_chk.group(1))
+                    plugin_count.add(int(plugin_chk.group(1)))
 
             logger.trace(f"Plugin count set: {sorted(plugin_count)}")
             file.truncate()
@@ -478,7 +473,7 @@ class CurrentInstallation:
                 apply_settings.append(f"LastSession\trating\t{settings_prf['rating']}")
 
                 # Plugin settings
-                start_count_plugin = int(sorted(plugin_count)[-1]) + 1
+                start_count_plugin = max(plugin_count) + 1 if plugin_count else 0
                 if settings_prf.get("plugins"):
                     for count, plugin_fn in enumerate(settings_prf["plugins"], start_count_plugin):
                         apply_settings.append(f"Plugins\tPlugin{count}\t{plugin_fn}")
@@ -494,13 +489,14 @@ class CurrentInstallation:
             if not lines or not file or not file_path:
                 logger.warning("Needs all 3 parts to be passed")
                 return
+            # Build up all changes in memory then write the file once at the end
+            new_lines = list(lines)
+
             # Do this with **all** screen setting files
             if re.match(r"^.*\_APP\_Screen.txt", file_path):
                 show_vccs = "m_ShowTsVccsMiniControl:0"
-                for line in lines:
-                    content = re.sub(r"^m\_ShowTsVccsMiniControl\:[1|0]{1}", show_vccs, line)
-                    file.write(content)
-                file.truncate()
+                new_lines = [re.sub(r"^m_ShowTsVccsMiniControl:[01]", show_vccs, line)
+                             for line in new_lines]
 
             # Add stored settings from earlier into txt files
             try:
@@ -520,14 +516,21 @@ class CurrentInstallation:
                                 raise ValueError(
                                     f"Unable to generate search string for {row['filepath']}")
 
-                            for line in lines:
-                                content = re.sub(rf"^{search_string}\:.*", row['data'], line)
+                            pattern = rf"^{re.escape(search_string)}:.*"
+                            replacement = row['data'].replace("\\", "\\\\")
+                            updated_lines = []
+                            for line in new_lines:
+                                content = re.sub(pattern, replacement, line)
                                 if content != line:
                                     logger.info(content.strip())
-                                file.write(content)
-                            file.truncate()
+                                updated_lines.append(content)
+                            new_lines = updated_lines
             except FileNotFoundError:
                 logger.warning("Settings file was not found")
+
+            if new_lines != lines:
+                file.writelines(new_lines)
+                file.truncate()
 
         logger.info("Updating references to SECTORFILE and SECTORTITLE")
         asr_sector_file()

@@ -8,6 +8,7 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import datetime
 import math
+from typing import Optional
 
 # Third Party Libraries
 from loguru import logger
@@ -27,10 +28,11 @@ class Airac:
         # Length of one AIRAC cycle
         self.cycle_days = 28
 
-    def _initialise(self) -> int:
+    def _initialise(self, input_date:Optional[datetime.date]=None) -> int:
         """Calculate the number of AIRAC cycles between any given date and the start date"""
 
-        input_date = datetime.date.today()
+        if input_date is None:
+            input_date = datetime.date.today()
 
         # How many AIRAC cycles have occured since the start date
         diff_cycles = (input_date - self.base_date) / datetime.timedelta(days=1)
@@ -43,22 +45,23 @@ class Airac:
 
         return number_of_cycles
 
-    def cycle(self, next_cycle:bool=False) -> datetime.date:
+    def cycle(self, next_cycle:bool=False,
+              input_date:Optional[datetime.date]=None) -> datetime.date:
         """Return the date of the current AIRAC cycle"""
 
-        number_of_cycles = self._initialise()
+        number_of_cycles = self._initialise(input_date)
         if next_cycle:
-            number_of_days = (number_of_cycles + 1) * self.cycle_days + 1
-        else:
-            number_of_days = number_of_cycles * self.cycle_days + 1
+            number_of_cycles += 1
+        # base_date is itself an AIRAC date, so no offset is needed
+        number_of_days = number_of_cycles * self.cycle_days
         select_cycle = self.base_date + datetime.timedelta(days=number_of_days)
         logger.success(f"The selected AIRAC cycle date is: {select_cycle}")
 
         return select_cycle
 
-    def current_tag(self) -> str:
+    def current_tag(self, input_date:Optional[datetime.date]=None) -> str:
         """Returns the current tag for use with git"""
-        current_cycle = self.cycle()
+        current_cycle = self.cycle(input_date=input_date)
         # Split the current_cycle by '-' and return in format yyyy/mm
         split_cc = str(current_cycle).split("-")
         logger.debug(f"Current tag should be {split_cc[0]}/{split_cc[1]}")
