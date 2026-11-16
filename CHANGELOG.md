@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/chssn/ukcp-updater/compare/v1.2.2...v1.2.3) (2026-11-16)
+
+
+### Bug Fixes
+
+* incorrect value being returned by airac function ([c128c2e](https://github.com/chssn/ukcp-updater/commit/c128c2ee71811de0cde503b075640bdccf182ffa))
+
 ## [1.2.2](https://github.com/chssn/ukcp-updater/compare/v1.2.1...v1.2.2) (2026-09-25)
 
 
