@@ -8,12 +8,11 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import ctypes
 import os
-from tkinter import Tk
-from tkinter import filedialog
-from packaging.version import Version
+from tkinter import Tk, filedialog
 
 # Third Party Libraries
 from loguru import logger
+from packaging.version import Version
 
 # Local Libraries
 
@@ -42,8 +41,10 @@ class Euroscope:
             # This first bit just hides the tkinter box so only file explorer is displayed
             root = Tk()
             root.withdraw()
-            logger.warning("EuroScope doesn't appear to be installed in the default directory")
-            install_path = filedialog.askopenfilename(title='Select EuroScope exe file')
+            logger.warning(
+                "EuroScope doesn't appear to be installed in the default directory"
+            )
+            install_path = filedialog.askopenfilename(title="Select EuroScope exe file")
             logger.info(f"User provided {install_path} for EuroScope.exe location")
             return install_path
 
@@ -53,7 +54,7 @@ class Euroscope:
         exe_path = self.installed_location()
 
         # Load the version.dll library
-        version_dll = ctypes.WinDLL('version.dll')
+        version_dll = ctypes.WinDLL("version.dll")
 
         # Get the size of the file version info
         size = version_dll.GetFileVersionInfoSizeW(exe_path, None)
@@ -70,9 +71,10 @@ class Euroscope:
 
         version_dll.VerQueryValueW(
             buffer,
-            r'\StringFileInfo\040904b0\FileVersion',
+            r"\StringFileInfo\040904b0\FileVersion",
             ctypes.byref(description),
-            ctypes.byref(description_length))
+            ctypes.byref(description_length),
+        )
 
         # Print the description
         version_number = description.value
@@ -87,9 +89,13 @@ class Euroscope:
 
         # Carry out the comparison
         if Version(installed_version) > Version(minimum_version):
-            logger.success(f"Installed version of EuroScope (v{installed_version}) "
-                           "is compatible with this script")
+            logger.success(
+                f"Installed version of EuroScope (v{installed_version}) "
+                "is compatible with this script"
+            )
             return True
-        raise ValueError(f"EuroScope version (v{installed_version}) is incompatible with this "
-                         "application. Download the latest version from "
-                         "https://www.euroscope.hu/wp/installation/")
+        raise ValueError(
+            f"EuroScope version (v{installed_version}) is incompatible with this "
+            "application. Download the latest version from "
+            "https://www.euroscope.hu/wp/installation/"
+        )

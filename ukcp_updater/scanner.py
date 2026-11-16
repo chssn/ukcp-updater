@@ -9,16 +9,14 @@ Chris Parkinson (@chssn)
 import csv
 import os
 import re
-from tkinter import Tk
-from tkinter import filedialog
-from typing import List
+from tkinter import Tk, filedialog
 
 # Third Party Libraries
 import py7zr
-import requests # type: ignore
-from InquirerPy.inquirer import text, confirm, number, secret, select # type: ignore
-from InquirerPy.base.control import Choice # type: ignore
-from InquirerPy.validator import EmptyInputValidator # type: ignore
+import requests  # type: ignore
+from InquirerPy.base.control import Choice  # type: ignore
+from InquirerPy.inquirer import confirm, number, secret, select, text  # type: ignore
+from InquirerPy.validator import EmptyInputValidator  # type: ignore
 from loguru import logger
 
 # Local Libraries
@@ -30,7 +28,7 @@ class CurrentInstallation:
     Actions to be carried on the current installation of UKCP
     """
 
-    def __init__(self, live:str="ukcp-live") -> None:
+    def __init__(self, live: str = "ukcp-live") -> None:
         self.ukcp_location = self._location(live)
 
         # Get the current AIRAC
@@ -59,91 +57,99 @@ class CurrentInstallation:
                 return True
         raise FileExistsError(f"Unable to locate {url}")
 
-    def _location(self, live:str) -> str:
+    def _location(self, live: str) -> str:
         """Find the current location of UKCP"""
 
         # This is the default install location for EuroScope
         appdata_folder = os.environ["APPDATA"]
-        default_path = os.path.join(appdata_folder, 'EuroScope', live, 'UK')
+        default_path = os.path.join(appdata_folder, "EuroScope", live, "UK")
         logger.debug(f"Testing to see if {default_path} is valid...")
 
         if os.path.exists(default_path):
             logger.debug(
-                f"UK Controller Pack data is installed in the default location {default_path}")
+                f"UK Controller Pack data is installed in the default location {default_path}"
+            )
             return default_path
         else:
             # This first bit just hides the tkinter box so only file explorer is displayed
             root = Tk()
             root.withdraw()
-            logger.warning("UK Controller Pack data is not installed in the default location")
-            install_path = filedialog.askopenfilename(title='Select UK Controller Pack Folder')
+            logger.warning(
+                "UK Controller Pack data is not installed in the default location"
+            )
+            install_path = filedialog.askopenfilename(
+                title="Select UK Controller Pack Folder"
+            )
             logger.info(f"User provided {install_path} for UK Controller Pack location")
             return install_path
 
     @staticmethod
     def manual_entry(
-        return_user_data:dict,
-        realname:bool=False,
-        certificate:bool=False,
-        password:bool=False,
-        rating:bool=False,
-        all_data:bool=True) -> dict:
+        return_user_data: dict,
+        realname: bool = False,
+        certificate: bool = False,
+        password: bool = False,
+        rating: bool = False,
+        all_data: bool = True,
+    ) -> dict:
         """Allow manual entry of user data"""
 
         if realname or all_data:
             return_user_data["realname"] = text(
-                message="Enter your real name or CID:",
-                validate=EmptyInputValidator()).execute()
+                message="Enter your real name or CID:", validate=EmptyInputValidator()
+            ).execute()
 
         if certificate or all_data:
             return_user_data["certificate"] = number(
                 message="Enter your certificate or CID:",
                 min_allowed=800000,
-                validate=EmptyInputValidator()).execute()
+                validate=EmptyInputValidator(),
+            ).execute()
 
         if password or all_data:
             return_user_data["password"] = secret(
-                message="Enter your password:",
-                validate=EmptyInputValidator()
+                message="Enter your password:", validate=EmptyInputValidator()
             ).execute()
 
         if rating or all_data:
-            choices:List[Choice] = []
+            choices: list[Choice] = []
             for i, j in functions.RATING_DICT.items():
                 choices.append(Choice(j, name=i))
             return_user_data["rating"] = select(
                 message="Select your rating:",
                 choices=choices,
                 default=None,
-                ).execute()
+            ).execute()
 
         return return_user_data
 
     def user_settings(self) -> dict:
         """Parse current *.prf files for custom settings"""
 
-        plugin_out:List[str] = []
-        return_user_data:dict = {}
+        plugin_out: list[str] = []
+        return_user_data: dict = {}
         # Init the return_user_data keys
-        return_user_data.update({
-            "realname": None,
-            "certificate": None,
-            "password": None,
-            "facility": None,
-            "rating": None,
-            "plugins": None,
-            "vccs_ptt_g2a": None,
-            "vccs_ptt_g2g": None,
-            "vccs_capture_mode": None,
-            "vccs_capture_device": None,
-            "vccs_playback_mode": None,
-            "vccs_playback_device": None,
-            "hoppies_cpdlc_password": None,
-        })
+        return_user_data.update(
+            {
+                "realname": None,
+                "certificate": None,
+                "password": None,
+                "facility": None,
+                "rating": None,
+                "plugins": None,
+                "vccs_ptt_g2a": None,
+                "vccs_ptt_g2g": None,
+                "vccs_capture_mode": None,
+                "vccs_capture_device": None,
+                "vccs_playback_mode": None,
+                "vccs_playback_device": None,
+                "hoppies_cpdlc_password": None,
+            }
+        )
 
-        def menu_option(title:str, data_type:str, options:list) -> str:
+        def menu_option(title: str, data_type: str, options: list) -> str:
             """Menu to select one option out of many!"""
-            choices:list = []
+            choices: list = []
             if data_type == "rating":
                 for i, j in functions.RATING_DICT.items():
                     choices.append(Choice(j, name=i))
@@ -187,21 +193,23 @@ class CurrentInstallation:
             }
 
             # Init the return_user_data keys
-            return_user_data.update({
-                "realname": set(),
-                "certificate": set(),
-                "password": set(),
-                "facility": set(),
-                "rating": set(),
-                "plugins": set(),
-                "vccs_ptt_g2a": set(),
-                "vccs_ptt_g2g": set(),
-                "vccs_capture_mode": set(),
-                "vccs_capture_device": set(),
-                "vccs_playback_mode": set(),
-                "vccs_playback_device": set(),
-                "hoppies_cpdlc_password": set(),
-            })
+            return_user_data.update(
+                {
+                    "realname": set(),
+                    "certificate": set(),
+                    "password": set(),
+                    "facility": set(),
+                    "rating": set(),
+                    "plugins": set(),
+                    "vccs_ptt_g2a": set(),
+                    "vccs_ptt_g2g": set(),
+                    "vccs_capture_mode": set(),
+                    "vccs_capture_device": set(),
+                    "vccs_playback_mode": set(),
+                    "vccs_playback_device": set(),
+                    "hoppies_cpdlc_password": set(),
+                }
+            )
 
             appdata_folder = os.environ["APPDATA"]
             plugin_path = os.path.join(appdata_folder, "EuroScope", "PlugIn")
@@ -229,24 +237,34 @@ class CurrentInstallation:
             for key, values in return_user_data.items():
                 if key != "password" and key != "plugins":
                     if len(values) > 1:
-                        logger.warning(f"More than one setting for {key} has been found!")
+                        logger.warning(
+                            f"More than one setting for {key} has been found!"
+                        )
                         menu_select = menu_option(
-                            f"Select the {key} you wish to use below:", key, list(values))
+                            f"Select the {key} you wish to use below:",
+                            key,
+                            list(values),
+                        )
                         return_user_data[key] = menu_select
                     else:
                         return_user_data[key] = next(iter(values), None)
                 elif key == "password":
                     # Passwords handled separately
                     if len(values) > 1:
-                        logger.warning("More than one setting for your password has been found!")
+                        logger.warning(
+                            "More than one setting for your password has been found!"
+                        )
                         logger.info(
                             f"We found {len(values)} different passwords "
-                            "however won't display them!")
-                        logger.info("Please enter your password below. Note that no "
-                                    "characters or *'s will be displayed!")
+                            "however won't display them!"
+                        )
+                        logger.info(
+                            "Please enter your password below. Note that no "
+                            "characters or *'s will be displayed!"
+                        )
                         return_user_data["password"] = secret(
                             message="Enter your password:",
-                            validate=EmptyInputValidator()
+                            validate=EmptyInputValidator(),
                         ).execute()
                     elif len(values) == 1:
                         return_user_data["password"] = list(values)[0]
@@ -257,7 +275,9 @@ class CurrentInstallation:
                     # Handle plugins separately
                     plugins = return_user_data["plugins"]
                     if plugins:
-                        logger.info("The following custom (non UKCP) plugins have been detected:")
+                        logger.info(
+                            "The following custom (non UKCP) plugins have been detected:"
+                        )
                         plugin_out = []
 
                         # Loop over the plugins and ask for confirmation for each one
@@ -286,18 +306,30 @@ class CurrentInstallation:
 
         # Check for "None" entries
         if return_user_data["realname"] is None:
-            return_user_data = self.manual_entry(return_user_data, realname=True, all_data=False)
+            return_user_data = self.manual_entry(
+                return_user_data, realname=True, all_data=False
+            )
         if return_user_data["certificate"] is None:
-            return_user_data = self.manual_entry(return_user_data, certificate=True, all_data=False)
+            return_user_data = self.manual_entry(
+                return_user_data, certificate=True, all_data=False
+            )
         if return_user_data["password"] is None:
-            return_user_data = self.manual_entry(return_user_data, password=True, all_data=False)
+            return_user_data = self.manual_entry(
+                return_user_data, password=True, all_data=False
+            )
         if return_user_data["rating"] is None:
-            return_user_data = self.manual_entry(return_user_data, rating=True, all_data=False)
+            return_user_data = self.manual_entry(
+                return_user_data, rating=True, all_data=False
+            )
 
         # User information
-        print("The following data will be appended to all profiles in the UK Controller Pack")
-        print("This is a LOCAL operation and none of your data is transmitted "
-              "away from your computer!")
+        print(
+            "The following data will be appended to all profiles in the UK Controller Pack"
+        )
+        print(
+            "This is a LOCAL operation and none of your data is transmitted "
+            "away from your computer!"
+        )
         print(f"Real Name:\t\t{return_user_data['realname']}")
         print(f"Certificate:\t\t{return_user_data['certificate']}")
         print("Password:\t\t[NOT DISPLAYED]")
@@ -307,12 +339,18 @@ class CurrentInstallation:
                 print(f"Plugins:\t\t{i}")
             else:
                 print(f"\t\t\t{i}")
-        print(f"VCCS Nickname:\t\t{return_user_data['certificate']}\t\tnote: this has just been "
-              "copied from your certificate")
-        print(f"VCCS G2A PTT:\t\t{return_user_data['vccs_ptt_g2a']}\t\tnote: this is a "
-              "scancode representation of a phyiscal key")
-        print(f"VCCS G2G PTT:\t\t{return_user_data['vccs_ptt_g2g']}\t\tnote: this is a "
-              "scancode representation of a phyiscal key")
+        print(
+            f"VCCS Nickname:\t\t{return_user_data['certificate']}\t\tnote: this has just been "
+            "copied from your certificate"
+        )
+        print(
+            f"VCCS G2A PTT:\t\t{return_user_data['vccs_ptt_g2a']}\t\tnote: this is a "
+            "scancode representation of a phyiscal key"
+        )
+        print(
+            f"VCCS G2G PTT:\t\t{return_user_data['vccs_ptt_g2g']}\t\tnote: this is a "
+            "scancode representation of a phyiscal key"
+        )
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_mode']}")
         print(f"VCCS Playback Mode:\t{return_user_data['vccs_playback_mode']}")
         print(f"VCCS Capture Mode:\t{return_user_data['vccs_capture_device']}")
@@ -322,11 +360,12 @@ class CurrentInstallation:
 
         return return_user_data
 
-    def apply_settings(self, settings_prf:dict, settings_asr:dict):
+    def apply_settings(self, settings_prf: dict, settings_asr: dict):
         """Applies settings to relevant files"""
 
-        def iter_files(ext:str, file_mode:str):
+        def iter_files(ext: str, file_mode: str):
             """Iterate over files in the directory and search within each file"""
+
             def decorator_func(func):
                 def wrapper(*args, **kwargs):
                     for root, dirs, files in os.walk(self.ukcp_location):
@@ -338,18 +377,20 @@ class CurrentInstallation:
                                     lines = file.readlines()
                                     file.seek(0)
                                     func(lines, file, file_path, *args, **kwargs)
+
                 return wrapper
+
             return decorator_func
 
         def get_sector_file():
             """Get the sector file name"""
 
             sector_file_list = [
-                'Akrotiri LCRA.sct',
-                'Ascension and St Helena.sct',
-                'Falkland.sct',
-                'Gibraltar LXGB.sct'
-                ]
+                "Akrotiri LCRA.sct",
+                "Ascension and St Helena.sct",
+                "Falkland.sct",
+                "Gibraltar LXGB.sct",
+            ]
             sector_file = []
             for root, dirs, files in os.walk(self.ukcp_location):
                 for file_name in files:
@@ -363,8 +404,10 @@ class CurrentInstallation:
                     # Check the sector file matches the current AIRAC cycle
                     airac_format = str(self.airac.replace("/", "_"))
                     if airac_format not in sf:
-                        logger.warning("Your sector file appears out of date with the "
-                                    f"current {self.airac} release!")
+                        logger.warning(
+                            "Your sector file appears out of date with the "
+                            f"current {self.airac} release!"
+                        )
                         msg = "Would you like to download the latest sector file?"
                         proceed = confirm(message=msg, default=True).execute()
                         if proceed:
@@ -380,7 +423,9 @@ class CurrentInstallation:
 
                             # Extract the contents of the archive
                             with py7zr.SevenZipFile(file_path, mode="r") as archive:
-                                archive.extractall(path=f"{self.ukcp_location}\\Data\\Sector")
+                                archive.extractall(
+                                    path=f"{self.ukcp_location}\\Data\\Sector"
+                                )
 
                             # Clean up artifacts
                             os.remove(file_path)
@@ -394,7 +439,9 @@ class CurrentInstallation:
                                     logger.info("Old sector file already removed!")
 
                             # Return the newly downloaded sector file
-                            return str(f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct")
+                            return str(
+                                f"{self.ukcp_location}\\Data\\Sector\\UK_{airac_format}.sct"
+                            )
                     return str(sf)
                 elif os.path.basename(sf) in sector_file_list:
                     logger.debug(f"{sf} validated as part of UKCP sector file")
@@ -475,21 +522,28 @@ class CurrentInstallation:
             with open(file_path, "a", encoding="utf-8") as file_append:
                 apply_settings = []
                 # Session settings
-                apply_settings.append(f"LastSession\trealname\t{settings_prf['realname']}")
-                apply_settings.append(f"LastSession\tcertificate\t{settings_prf['certificate']}")
-                apply_settings.append(f"LastSession\tpassword\t{settings_prf['password']}")
+                apply_settings.append(
+                    f"LastSession\trealname\t{settings_prf['realname']}"
+                )
+                apply_settings.append(
+                    f"LastSession\tcertificate\t{settings_prf['certificate']}"
+                )
+                apply_settings.append(
+                    f"LastSession\tpassword\t{settings_prf['password']}"
+                )
                 # apply_settings.append(f"LastSession\tfacility\t{settings_prf['facility']}")
                 apply_settings.append(f"LastSession\trating\t{settings_prf['rating']}")
 
                 # Plugin settings
                 start_count_plugin = max(plugin_count) + 1 if plugin_count else 0
                 if settings_prf.get("plugins"):
-                    for count, plugin_fn in enumerate(settings_prf["plugins"], start_count_plugin):
+                    for count, plugin_fn in enumerate(
+                        settings_prf["plugins"], start_count_plugin
+                    ):
                         apply_settings.append(f"Plugins\tPlugin{count}\t{plugin_fn}")
 
                 file_append.write("\n")
-                for setting in apply_settings:
-                    file_append.write(setting + "\n")
+                file_append.writelines(setting + "\n" for setting in apply_settings)
 
         @iter_files(".txt", "r+")
         def txt_files(lines=None, file=None, file_path=""):
@@ -504,8 +558,10 @@ class CurrentInstallation:
             # Do this with **all** screen setting files
             if re.match(r"^.*\_APP\_Screen.txt", file_path):
                 show_vccs = "m_ShowTsVccsMiniControl:0"
-                new_lines = [re.sub(r"^m_ShowTsVccsMiniControl:[01]", show_vccs, line)
-                             for line in new_lines]
+                new_lines = [
+                    re.sub(r"^m_ShowTsVccsMiniControl:[01]", show_vccs, line)
+                    for line in new_lines
+                ]
 
             # Correct VATUK_*.txt files
             if re.match(r".*VATUK\_Euroscope.*\.txt", file_path):
@@ -524,7 +580,8 @@ class CurrentInstallation:
                     "UK",
                     "Data",
                     "Sector",
-                    "VATUK_Euroscope_files.txt")
+                    "VATUK_Euroscope_files.txt",
+                )
                 corrected_file_path = f"LOCALFILE:{fp_file_path}".replace("\\", "\\\\")
                 for line in lines:
                     content = re.sub(r"^LOCALFILE\:.*", corrected_file_path, line)
@@ -540,17 +597,18 @@ class CurrentInstallation:
                             logger.debug(f"Change detected: {row['data']}")
 
                             # Split the string by ':' and use this as a counter
-                            data_count = row['data'].split(':')
+                            data_count = row["data"].split(":")
                             if len(data_count) == 2:
                                 search_string = f"{data_count[0]}"
                             elif len(data_count) > 2:
                                 search_string = f"{data_count[0]}:{data_count[1]}"
                             else:
                                 raise ValueError(
-                                    f"Unable to generate search string for {row['filepath']}")
+                                    f"Unable to generate search string for {row['filepath']}"
+                                )
 
                             pattern = rf"^{re.escape(search_string)}:.*"
-                            replacement = row['data'].replace("\\", "\\\\")
+                            replacement = row["data"].replace("\\", "\\\\")
                             updated_lines = []
                             for line in new_lines:
                                 content = re.sub(pattern, replacement, line)

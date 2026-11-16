@@ -8,7 +8,6 @@ Chris Parkinson (@chssn)
 # Standard Libraries
 import datetime
 import math
-from typing import Optional
 
 # Third Party Libraries
 from loguru import logger
@@ -28,7 +27,7 @@ class Airac:
         # Length of one AIRAC cycle
         self.cycle_days = 28
 
-    def _initialise(self, input_date:Optional[datetime.date]=None) -> int:
+    def _initialise(self, input_date: datetime.date | None = None) -> int:
         """Calculate the number of AIRAC cycles between any given date and the start date"""
 
         if input_date is None:
@@ -36,17 +35,21 @@ class Airac:
 
         # How many AIRAC cycles have occured since the start date
         diff_cycles = (input_date - self.base_date) / datetime.timedelta(days=1)
-        logger.debug(f"{diff_cycles} days have passed since the start date ({self.start_date})")
+        logger.debug(
+            f"{diff_cycles} days have passed since the start date ({self.start_date})"
+        )
         # Round that number down to the nearest whole integer
         number_of_cycles = math.floor(diff_cycles / self.cycle_days)
         logger.debug(
             f"{diff_cycles} divided by {self.cycle_days} (AIRAC cycle length) and rounded down is "
-            f"{number_of_cycles} AIRAC cycles")
+            f"{number_of_cycles} AIRAC cycles"
+        )
 
         return number_of_cycles
 
-    def cycle(self, next_cycle:bool=False,
-              input_date:Optional[datetime.date]=None) -> datetime.date:
+    def cycle(
+        self, next_cycle: bool = False, input_date: datetime.date | None = None
+    ) -> datetime.date:
         """Return the date of the current AIRAC cycle"""
 
         number_of_cycles = self._initialise(input_date)
@@ -59,7 +62,7 @@ class Airac:
 
         return select_cycle
 
-    def current_tag(self, input_date:Optional[datetime.date]=None) -> str:
+    def current_tag(self, input_date: datetime.date | None = None) -> str:
         """Returns the current tag for use with git"""
         current_cycle = self.cycle(input_date=input_date)
         # Split the current_cycle by '-' and return in format yyyy/mm

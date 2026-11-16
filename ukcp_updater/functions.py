@@ -6,10 +6,10 @@ Chris Parkinson (@chssn)
 #!/usr/bin/env python3
 
 # Standard Libraries
+import filecmp
 import os
 import shutil
 import stat
-import filecmp
 
 # Third Party Libraries
 from loguru import logger
@@ -29,7 +29,7 @@ RATING_DICT = {
     "Senior Instuctor (I2)": 9,
     "Senior Instuctor (I3)": 10,
     "Supervisor": 11,
-    "Administrator": 12
+    "Administrator": 12,
 }
 
 FACILITY_TYPES = {
@@ -42,13 +42,15 @@ FACILITY_TYPES = {
     "Enroute": 6,
 }
 
-IGNORE_EXT:set = set()
+IGNORE_EXT: set = set()
 IGNORE_NAMES = {"vStripsESP.dll"}
+
 
 def should_ignore(filename: str) -> bool:
     """should it be ignored"""
     ext = os.path.splitext(filename)[1].lower()
     return ext in IGNORE_EXT or filename in IGNORE_NAMES
+
 
 def remove_stale_git(live_dir: str):
     """Remove a .git folder copied into live by older versions of this tool"""
@@ -67,6 +69,7 @@ def remove_stale_git(live_dir: str):
         shutil.rmtree(stale_git, onerror=make_writable)
     except OSError as err:
         logger.error(err)
+
 
 def sync_cache_to_live(cache_dir: str, live_dir: str):
     """

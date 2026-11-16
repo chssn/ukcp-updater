@@ -1,5 +1,6 @@
+from cx_Freeze import Executable, setup
+
 import ukcp_updater
-from cx_Freeze import setup, Executable
 
 install_requires = []
 setup_requires = []
@@ -41,7 +42,7 @@ setup(
     name="VATSIM UK Controller Pack Updater",
     version=ukcp_updater.__version__,
     description="VATSIM UK Controller Pack Updater",
-    long_description="..\README.md",
+    long_description=r"..\README.md",
     long_description_content_type="text/markdown",
     url="https://vatsim.uk",
     author="Chris Parkinson",
@@ -51,7 +52,7 @@ setup(
     python_requires=">=3.9.0",
     executables=[
         Executable(
-            "ukcp_updater\__main__.py",
+            r"ukcp_updater\__main__.py",
             target_name=base,
             icon="ukcpu.ico",
             shortcut_name="UKCP Updater",

@@ -13,7 +13,8 @@ import sys
 from loguru import logger
 
 # Local Libraries
-from ukcp_updater import functions, github, scanner, __VERSION__
+from ukcp_updater import __VERSION__, functions, github, scanner
+
 
 @logger.catch
 def main():
@@ -49,6 +50,7 @@ def main():
 
         # Final check before closing
         input("Update has completed. Press ENTER to close this window...")
+
 
 if __name__ == "__main__":
     main()

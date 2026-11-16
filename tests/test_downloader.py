@@ -1,10 +1,9 @@
 import os
-import pytest
 import random
-import re
 import string
-import git
 from unittest.mock import patch
+
+import pytest
 
 from ukcp_updater.github import Downloader
 

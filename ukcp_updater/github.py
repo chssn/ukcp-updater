@@ -11,7 +11,7 @@ import subprocess
 
 # Third Party Libraries
 import git
-from InquirerPy.inquirer import confirm # type: ignore
+from InquirerPy.inquirer import confirm  # type: ignore
 from loguru import logger
 
 # Local Libraries
@@ -23,7 +23,9 @@ class Downloader:
     Downloads the latest version of UKCP
     """
 
-    def __init__(self, cache:str="ukcp-cache", live:str="ukcp-live" , branch:str="main") -> None:
+    def __init__(
+        self, cache: str = "ukcp-cache", live: str = "ukcp-live", branch: str = "main"
+    ) -> None:
         # Currently hardcoded for VATSIM UK
         self.repo_url = "https://github.com/VATSIM-UK/uk-controller-pack.git"
 
@@ -34,7 +36,7 @@ class Downloader:
         # Where should the app download to?
         # Default is the EuroScope folder in APPDATA
         appdata_folder = os.environ["APPDATA"]
-        self.euroscope_appdata = os.path.join(appdata_folder, 'EuroScope')
+        self.euroscope_appdata = os.path.join(appdata_folder, "EuroScope")
         logger.debug(f"Euroscope AppData Folder: {self.euroscope_appdata}")
 
         # Set some git vars
@@ -57,7 +59,7 @@ class Downloader:
         """Checks to see if the git package is installed"""
         try:
             # Execute the git command to check if it is recognized
-            version = subprocess.check_output(['git', '--version'])
+            version = subprocess.check_output(["git", "--version"])
             logger.debug(f"Git is installed - {str(version.decode()).strip()}")
             return True
         except (FileNotFoundError, subprocess.CalledProcessError):
@@ -66,14 +68,23 @@ class Downloader:
     @staticmethod
     def install_git() -> bool:
         """Trys to install the git package"""
-        logger.info("Lauching PowerShell to run the following command: "
-                    "winget install --id Git.Git -e --source winget")
-        logger.info("You can find out more about winget here - "
-                    "https://learn.microsoft.com/en-us/windows/package-manager/winget/")
+        logger.info(
+            "Lauching PowerShell to run the following command: "
+            "winget install --id Git.Git -e --source winget"
+        )
+        logger.info(
+            "You can find out more about winget here - "
+            "https://learn.microsoft.com/en-us/windows/package-manager/winget/"
+        )
 
         # Launch the shell
         process = subprocess.Popen(
-            ["powershell.exe", "-Command", "winget install --id Git.Git -e --source winget"])
+            [
+                "powershell.exe",
+                "-Command",
+                "winget install --id Git.Git -e --source winget",
+            ]
+        )
 
         # Wait for the process to complete and get the exit status
         process.communicate()
@@ -102,11 +113,15 @@ class Downloader:
                 message = "Are you happy for this tool to install 'git'?"
                 sel = confirm(message=message, default=True).execute()
                 if sel:
-                    logger.success("User has constented to the 'git' package being installed")
+                    logger.success(
+                        "User has constented to the 'git' package being installed"
+                    )
                     if self.install_git():
                         logger.success("Git has been installed")
                         return True
-                logger.error("User has not consented to the 'git' package being installed")
+                logger.error(
+                    "User has not consented to the 'git' package being installed"
+                )
                 return False
         return True
 
