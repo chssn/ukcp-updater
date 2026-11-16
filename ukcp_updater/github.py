@@ -1,9 +1,9 @@
+#!/usr/bin/env python3
+
 """
 UKCP Updater
 Chris Parkinson (@chssn)
 """
-
-#!/usr/bin/env python3
 
 # Standard Libraries
 import os
