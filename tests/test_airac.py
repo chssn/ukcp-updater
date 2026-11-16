@@ -32,9 +32,17 @@ def test_next_cycle():
     assert result == datetime.date(2026, 2, 19)
 
 
-def test_tag_for_cycle_on_last_day_of_month():
-    # 2027-09-30 is an AIRAC date; the old +1 day offset tagged it 2027/10
-    assert airac.current_tag(input_date=datetime.date(2027, 10, 5)) == "2027/09"
+@pytest.mark.parametrize("today, expected", [
+    # Tags are yyyy/<cycle number>, not yyyy/<month>
+    ("2026-01-22", "2026/01"),
+    ("2026-10-28", "2026/10"),  # cycle 2610 effective 2026-10-01
+    ("2026-11-16", "2026/11"),  # cycle 2611 effective 2026-10-29
+    ("2026-12-24", "2026/13"),  # 13th cycle of the year
+    ("2027-01-21", "2027/01"),
+    ("2027-10-05", "2027/10"),  # cycle 2710 effective 2027-09-30
+])
+def test_current_tag_uses_cycle_number(today, expected):
+    assert airac.current_tag(input_date=datetime.date.fromisoformat(today)) == expected
 
 
 def test_current_tag_defaults_to_today():

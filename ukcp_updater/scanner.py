@@ -47,8 +47,9 @@ class CurrentInstallation:
 
     def _check_if_sector_file_dl_exists(self) -> bool:
         """Tests to see if the sector file download exists"""
-        for version in ["", "a", "b", "c", "d", "e", "f"]:
+        for version in ["", "a", "b", "c", "d", "e", "f", "g", "h"]:
             airac_format = str(self.airac.replace("/", "_"))
+            logger.warning(airac_format)
             url = f"{self.sector_url}UK_{airac_format}{version}.7z"
             logger.debug(f"Looking up sector file at url {url}")
             sector_7z = requests.get(url, timeout=30)

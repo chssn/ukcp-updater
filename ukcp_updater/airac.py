@@ -65,8 +65,11 @@ class Airac:
     def current_tag(self, input_date: datetime.date | None = None) -> str:
         """Returns the current tag for use with git"""
         current_cycle = self.cycle(input_date=input_date)
-        # Split the current_cycle by '-' and return in format yyyy/mm
-        split_cc = str(current_cycle).split("-")
-        logger.debug(f"Current tag should be {split_cc[0]}/{split_cc[1]}")
+        # Tags are yyyy/nn where nn is the AIRAC cycle number within the year
+        # (01-13), not the calendar month. The first cycle of a year always
+        # falls within its first 28 days, so the ordinal follows from day-of-year.
+        cycle_number = (current_cycle.timetuple().tm_yday - 1) // self.cycle_days + 1
+        tag = f"{current_cycle.year}/{cycle_number:02d}"
+        logger.debug(f"Current tag should be {tag}")
 
-        return f"{split_cc[0]}/{split_cc[1]}"
+        return tag
